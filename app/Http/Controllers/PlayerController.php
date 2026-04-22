@@ -1,0 +1,14 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Team;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class PlayerController extends Controller
+{
+    public function index() {
+        return Inertia::render("backend/player", []);
+    }
+}

@@ -1,0 +1,139 @@
+import { LucideIcon } from 'lucide-react';
+import type { Config } from 'ziggy-js';
+
+export interface Auth {
+    user: User;
+}
+
+export interface BreadcrumbItem {
+    title: string;
+    href: string;
+}
+
+export interface NavGroup {
+    title: string;
+    items: NavItem[];
+}
+
+export interface NavItem {
+    title: string;
+    href: string;
+    icon?: LucideIcon | null;
+    isActive?: boolean;
+    isDropdown?:boolean
+    children?: SubNavItem[]
+}
+
+export interface SubNavItem {
+    title: string;
+    href: string;
+    icon?: LucideIcon | null;
+    isActive?: boolean;
+    isDropdown?: boolean
+    children?: NavItem[]
+}
+
+export interface SharedData {
+    name: string;
+    quote: { message: string; author: string };
+    auth: Auth;
+    ziggy: Config & { location: string };
+    sidebarOpen: boolean;
+    adsUrl: string,
+    currentSeason: string,
+    [key: string]: unknown;
+}
+
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string;
+    email_verified_at: string | null;
+    created_at: string;
+    updated_at: string;
+    [key: string]: unknown; // This allows for additional properties...
+}
+
+
+export interface SelectItems {
+    value: string | number,
+    label: string,
+    color?: string,
+    imageUrl?: string,
+}
+
+
+export interface NewsTypes {
+    value: string;
+    text: string;
+}
+
+export interface SubmitScheduleButtonData {
+    type: string;
+    payload: string | Date;
+};
+
+export interface DropdownListItem {
+    value: string
+    text: string
+}
+
+export interface CreateNewsProp  {
+    newsTypes: NewsTypes[];
+    authors: DropdownListItem[] | null;
+    teams: DropdownListItem[] | null;
+    leagues: DropdownListItem[] | null;
+    players?: DropdownListItem[];
+    news?: any
+};
+
+
+export type NewsOptionType = 'text' | 'video';
+
+export interface NewsFormType  {
+    id: number | null;
+    title: string;
+    title_ar: string;
+    type: NewsOptionType;
+    _method: string
+    author: string | null;
+    body: string;
+    body_ar: string;
+    images: any[];
+    categories: any[];
+    tags: any[];
+    leagues: any[];
+    teams: any[];
+    action: SubmitScheduleButtonData | null;
+    video: any;
+    meta_title: string | null;
+    meta_title_ar: string | null;
+    meta_desc: string | null;
+    meta_desc_ar: string | null;
+    status: boolean;
+    is_featured: boolean;
+    in_top: boolean;
+    in_slider: boolean;
+};
+
+
+export interface PaginatedType {
+    current_page: number
+    data: any[],
+    first_page_url: string
+    from: number
+    last_page: number
+    last_page_url: string
+    links: {
+        active: boolean
+        label: string | number
+        url: string
+    }[]
+    next_page_url: string
+    path: string
+    per_page: number
+    prev_page_url: string
+    to: number
+    total: number
+}
