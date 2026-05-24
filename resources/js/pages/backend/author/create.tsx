@@ -3,14 +3,18 @@ import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import AuthorForm from './components/author-form';
 
-export default function Index() {
+export type AuthorPropType = {
+    author?: any;
+};
+
+export default function Index({ author }: AuthorPropType) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Author',
-            href: '#',
+            href: route('author.index'),
         },
         {
-            title: 'Create',
+            title: author ? `Update ${author.name}` : 'Create',
             href: route('author.create'),
         },
     ];
@@ -19,7 +23,7 @@ export default function Index() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create author" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <AuthorForm />
+                <AuthorForm author={author} />
             </div>
         </AppLayout>
     );

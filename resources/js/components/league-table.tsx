@@ -2,6 +2,7 @@ import { usePlaceholderImage } from '@/hooks/user-placeholder-image';
 import { cn } from '@/lib/utils';
 import { Standing } from '@/types/match';
 import { Link, router } from '@inertiajs/react';
+import i18next, { t } from 'i18next';
 import { useEffect, useRef, useState } from 'react';
 
 type LeagueTableProp = {
@@ -132,7 +133,7 @@ export default function LeagueTable({ table, showFilter = true, teamsInView, cla
                             onClick={() => handleChangeTab(item)}
                             key={item}
                         >
-                            {item === 'overall' ? 'all' : item}
+                            {item === 'overall' ? t('all') : t(item)}
                         </button>
                     ))}
                 </div>
@@ -142,29 +143,34 @@ export default function LeagueTable({ table, showFilter = true, teamsInView, cla
                     <table className="table w-full table-auto transition-all">
                         <thead>
                             <tr>
-                                <th className="pb-1 pl-5 text-left text-xs">#</th>
-                                <th className="pb-1 text-left text-xs"></th>
-                                <th className="pb-1 text-left text-xs">PL</th>
-                                <th className="pb-1 text-left text-xs">W</th>
-                                <th className="pb-1 text-left text-xs">D</th>
-                                <th className="pb-1 text-left text-xs">L</th>
-                                <th className="pb-1 text-left text-xs">+/-</th>
-                                <th className="pb-1 text-left text-xs">GD</th>
-                                <th className="pb-1 text-left text-xs">PTS</th>
-                                <th className="pb-1 text-left text-xs">Form</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'pl-5 text-left' : 'pr-5 text-right')}>#</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}></th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}>PL</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}>W</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}>D</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}>L</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}>+/-</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}>GD</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}>PTS</th>
+                                <th className={cn('pb-1 text-xs', i18next.language == 'en' ? 'text-left' : 'text-right')}>Form</th>
                             </tr>
                         </thead>
                         <tbody>
                             {tables.map((item, index) => (
                                 <tr
                                     className={cn(
-                                        'mb-1 w-full cursor-pointer border-l-3 hover:bg-gray-200',
+                                        'mb-1 w-full cursor-pointer hover:bg-gray-200',
+                                        i18next.language == 'en' ? 'border-l-3' : 'border-r-3',
                                         getBorderColor(item),
                                         teamsInView?.includes(item.id.toString()) ? 'bg-gray-300' : '',
                                     )}
                                     key={index}
                                 >
-                                    <td className="border-b border-gray-50 py-1.5 pl-5 text-xs font-bold">{index + 1}</td>
+                                    <td
+                                        className={cn('border-b border-gray-50 py-1.5 text-xs font-bold', i18next.language == 'en' ? 'pl-5' : 'pr-5')}
+                                    >
+                                        {index + 1}
+                                    </td>
                                     <td className="border-b border-gray-50 py-1.5 text-xs font-bold whitespace-nowrap">
                                         <div className="flex items-center gap-x-3">
                                             <div className="h-6 w-6 overflow-hidden rounded-full border border-gray-200">
@@ -181,7 +187,7 @@ export default function LeagueTable({ table, showFilter = true, teamsInView, cla
                                                 })}
                                                 className="hover:underline"
                                             >
-                                                <p>{item.name}</p>
+                                                <p>{i18next.language == 'en' ? item.name : item.nameAr}</p>
                                             </Link>
                                         </div>
                                     </td>
@@ -220,25 +226,25 @@ export default function LeagueTable({ table, showFilter = true, teamsInView, cla
                         {showChampionBorder && (
                             <div className="flex items-center gap-x-2">
                                 <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                                <p className="text-xs text-gray-600">Champions League</p>
+                                <p className="text-xs text-gray-600">{t('Champions League')}</p>
                             </div>
                         )}
                         {showEuropaBorder && (
                             <div className="flex items-center gap-x-2">
                                 <div className="h-2 w-2 rounded-full bg-blue-950"></div>
-                                <p className="text-xs text-gray-600">Europa League</p>
+                                <p className="text-xs text-gray-600">{t('Europa League')}</p>
                             </div>
                         )}
                         {showConferenceBorder && (
                             <div className="flex items-center gap-x-2">
                                 <div className="h-2 w-2 rounded-full bg-yellow-600"></div>
-                                <p className="text-xs text-gray-600">Conference League</p>
+                                <p className="text-xs text-gray-600">{t('Conference League')}</p>
                             </div>
                         )}
                         {showRelegationBorder && (
                             <div className="flex items-center gap-x-2">
                                 <div className="h-2 w-2 rounded-full bg-red-500"></div>
-                                <p className="text-xs text-gray-600">Relegation</p>
+                                <p className="text-xs text-gray-600">{t('Relegation')}</p>
                             </div>
                         )}
                     </div>

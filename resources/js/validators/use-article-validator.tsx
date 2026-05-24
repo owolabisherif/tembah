@@ -15,6 +15,7 @@ export default function useArticleValidator(data: object): {
         body: Joi.string().required(),
         body_ar: Joi.string().required(),
         author: Joi.string().required(),
+        _method: Joi.string(),
         images: Joi.array().custom((images, helpers) => {
             for (const image of images) {
                 let msg: Joi.LanguageMessages = {
@@ -77,6 +78,8 @@ export default function useArticleValidator(data: object): {
         meta_title_ar: Joi.string().optional().allow(''),
         meta_desc: Joi.string().optional().allow(''),
         meta_desc_ar: Joi.string().optional().allow(''),
+        keywords: Joi.string().optional().allow(''),
+        keywords_ar: Joi.string().optional().allow(''),
         action: Joi.required(),
         tags: Joi.any(),
         leagues: Joi.any(),

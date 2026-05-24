@@ -33,6 +33,8 @@ class TagService
             $imagePaths = array();
             $imagePath = 'uploads/images';
 
+            $status = $request->status == 'true' ? true : false;
+
             $tag = Tag::updateOrCreate([
                 "id" => $request->id ?? null
             ], [
@@ -40,18 +42,19 @@ class TagService
                 "slug_ar" => makeSlug(new Tag, $request->titleAr, "slug_ar"),
                 "title" => $request->title,
                 "title_ar" => $request->titleAr,
-                "status" => (bool) $request->status ?? 1,
+                "status" => $status,
             ]);
 
             if ($request->isMethod("PUT")) DropImageAction::handle($tag, Tag::class, $imagePath);
 
-            if (count($request->images) > 0) {
+            if ($request->images && count($request->images) > 0) {
                 $path = $request->images[0]->store($imagePath, "public");
-                $url = url("/") . "/storage" . "/$path";
                 $imagePaths[] = $path;
+                $imageArray = explode("/", $path);
+                $name = array_pop($imageArray);
 
                 $tag->image()->updateOrCreate(["imageable_id" => $tag->id], [
-                    "url" => $url,
+                    "name" => $name,
                 ]);
 
                 OptimizeImageJob::dispatch($imagePaths);

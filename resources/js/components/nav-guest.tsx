@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { t } from 'i18next';
+import i18next, { t } from 'i18next';
 import { SquareIcon, UserIcon } from 'lucide-react';
 import { PropsWithChildren, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -26,7 +26,11 @@ interface MegaMenuType {
     command?: Function;
 }
 
-export default function NavGuest({ children }: PropsWithChildren) {
+type NavGuestProp = {
+    className?: string;
+};
+
+export default function NavGuest({ className, children }: PropsWithChildren<NavGuestProp>) {
     const { auth } = usePage<SharedData>().props;
     const [selectedMenu, setSelectedMenu] = useState<MegaMenuType | null>(null);
     const megaMenu = useRef(null);
@@ -34,6 +38,12 @@ export default function NavGuest({ children }: PropsWithChildren) {
     const menus: MegaMenuType[] = [
         {
             title: t('Home'),
+            icon: null,
+            type: 'link',
+            href: route('home'),
+        },
+        {
+            title: t('About us'),
             icon: null,
             type: 'link',
             href: route('home'),
@@ -51,22 +61,28 @@ export default function NavGuest({ children }: PropsWithChildren) {
                     cols: [
                         [
                             {
-                                title: 'News',
+                                title: t('News'),
                                 description: 'Meet and learn about our dedication',
                                 icon: UserIcon,
-                                href: route('home'),
+                                href: route('text.news.index'),
                             },
                             {
-                                title: 'Transfer News',
+                                title: t('Transfer News'),
                                 description: 'Meet and learn about our dedication',
                                 icon: UserIcon,
-                                href: route('home'),
+                                href: route('transfer.news.index'),
                             },
                             {
-                                title: 'Video News',
+                                title: t('Video News'),
                                 description: 'Meet and learn about our dedication',
                                 icon: UserIcon,
-                                href: route('home'),
+                                href: route('category.news.index', { slug: 'video-news' }),
+                            },
+                            {
+                                title: t('Live Scores'),
+                                description: 'Meet and learn about our dedication',
+                                icon: UserIcon,
+                                href: route('live.scores'),
                             },
                         ],
                     ],
@@ -104,48 +120,48 @@ export default function NavGuest({ children }: PropsWithChildren) {
                 // },
             ],
         },
-        {
-            title: t('Matches'),
-            description: 'Find the perfect solution for your needs.',
-            icon: SquareIcon,
-            type: 'mega',
-            command: (menu: MegaMenuType) => {
-                handleMenuUpdate(menu);
-            },
-            subMenus: [
-                {
-                    // header: 'Test header 2',
-                    cols: [
-                        [
-                            {
-                                title: 'Live',
-                                description: 'Meet and learn about our dedication',
-                                icon: UserIcon,
-                                href: route('home'),
-                            },
-                            {
-                                title: 'Today',
-                                description: 'Meet and learn about our dedication',
-                                icon: UserIcon,
-                                href: route('home'),
-                            },
-                            {
-                                title: 'Tommorrow',
-                                description: 'Meet and learn about our dedication',
-                                icon: UserIcon,
-                                href: route('home'),
-                            },
-                            {
-                                title: 'Yesterday',
-                                description: 'Meet and learn about our dedication',
-                                icon: UserIcon,
-                                href: route('home'),
-                            },
-                        ],
-                    ],
-                },
-            ],
-        },
+        // {
+        //     title: t('Matches'),
+        //     description: 'Find the perfect solution for your needs.',
+        //     icon: SquareIcon,
+        //     type: 'mega',
+        //     command: (menu: MegaMenuType) => {
+        //         handleMenuUpdate(menu);
+        //     },
+        //     subMenus: [
+        //         {
+        //             // header: 'Test header 2',
+        //             cols: [
+        //                 [
+        //                     {
+        //                         title: 'Live',
+        //                         description: 'Meet and learn about our dedication',
+        //                         icon: UserIcon,
+        //                         href: route('home'),
+        //                     },
+        //                     {
+        //                         title: 'Today',
+        //                         description: 'Meet and learn about our dedication',
+        //                         icon: UserIcon,
+        //                         href: route('home'),
+        //                     },
+        //                     {
+        //                         title: 'Tommorrow',
+        //                         description: 'Meet and learn about our dedication',
+        //                         icon: UserIcon,
+        //                         href: route('home'),
+        //                     },
+        //                     {
+        //                         title: 'Yesterday',
+        //                         description: 'Meet and learn about our dedication',
+        //                         icon: UserIcon,
+        //                         href: route('home'),
+        //                     },
+        //                 ],
+        //             ],
+        //         },
+        //     ],
+        // },
         // {
         //     title: 'Leagues',
         //     description: 'Reach out to us for assistance or inquiries',
@@ -193,10 +209,11 @@ export default function NavGuest({ children }: PropsWithChildren) {
     return (
         <>
             <nav
-                className={cn('relative z-[120] mb-3 flex justify-between overflow-hidden rounded-b-md border-t border-white bg-blue-950')}
-                dir="ltr"
+                className={cn(
+                    'fi relative z-[120] mb-3 hidden justify-between overflow-hidden rounded-b-md border-t border-white bg-blue-950 md:flex dark:bg-neutral-800',
+                )}
             >
-                <div className="relative flex w-full justify-end gap-x-10 pr-5">
+                <div className={cn('relative flex w-full gap-x-10', i18next.language == 'en' ? 'justify-end pr-5' : 'justify-start pl-5')}>
                     {menus.map((item) =>
                         item.type == 'link' ? (
                             <Link

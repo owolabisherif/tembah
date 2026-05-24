@@ -118,14 +118,21 @@ const VideoJs = (props: PropsWithChildren<VideoPlayerPropsInferface>) => {
 
 
         player.on('ads-request', function(res: any) {
-          //
+          player.pause()
         });
 
         player.on("ended", () => {
-          inc()
           player.ima.changeAdTag(page.props.adsUrl);
           player.ima.requestAds();
+          inc()
         })
+
+        // player.on('contentended', function() {
+        //     player.ima.initializeAdDisplayContainer()
+        //     player.ima.setContentWithAdTag(null, page.props.adsUrl, true)
+        //     player.ima.changeAdTag(page.props.adsUrl);
+        //     player.ima.requestAds()
+        // });
       });
       
       setAdditionalOptions(player)

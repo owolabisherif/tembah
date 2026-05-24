@@ -2,6 +2,7 @@ import FootPitch from '@/components/foot-pitch';
 import Loader from '@/components/loader';
 import { Fixture, FormationType, MatchOverviewType } from '@/types/match';
 import axios from 'axios';
+import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 import Ad from '../ad';
 
@@ -103,7 +104,7 @@ export default function Overview({ slug, fixture }: OverviewProp) {
                     <Loader />
                 ) : (
                     <div className="mt-5 p-5">
-                        <p className="font-bold">No information to show. Please try again.</p>
+                        <p className="font-bold">{t('No information to show. Please try again.')}</p>
                     </div>
                 )}
             </div>

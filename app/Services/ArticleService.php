@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Actions\CacheDropAction;
 use App\Actions\DropImageAction;
 use App\Actions\DropVideoAction;
 use App\Enums\NewsType;
@@ -14,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -31,7 +33,6 @@ class ArticleService
             $leagues = array();
             $players = array();
             $tags = array();
-            $keywords = array();
             $imagePaths = array();
             $images = array();
             $videoUrl = null;
@@ -40,7 +41,6 @@ class ArticleService
             if ($request->tags && !empty($request->tags)) {
                 foreach ($request->tags as $cat) {
                     $id = $cat["id"] ?? $cat["value"];
-                    $keywords[] = $cat["label"];
                     $tags[] = (int) $id;
                 }
             }
@@ -74,28 +74,35 @@ class ArticleService
                 if ($request->isMethod("PUT")) DropVideoAction::handle(new Article(), $request->id, $videoPath);
 
                 $videoUrl = $request->video->store($videoPath, "public");
+                $videoUrl = explode("/", $videoUrl);
+                $videoUrl = array_pop($videoUrl);
             }
 
             $scheduled = @$request->action["type"] == "schedule" ? Carbon::parse($request->action["payload"])->setTimezone('Asia/Qatar')->format("Y-m-d H:i:s") : null;
 
+            $slug = makeSlug(new Article, $request->title);
+            $slugAr = makeSlug(new Article, $request->title_ar, "slug_ar");
+            $status = $request->status == 'true' ? true : false;
+            $in_slider = $request->in_slider== 'true' ? true : false;
+
             $data = [
-                "slug" => makeSlug(new Article, $request->title),
-                "slug_ar" => makeSlug(new Article, $request->title_ar, "slug_ar"),
+                "slug" => $slug,
+                "slug_ar" => $slugAr,
                 "title" => $request->title,
                 "title_ar" => $request->title_ar,
                 "type" => $request->type,
                 "author_id" => $request->author ?? 0,
                 "body" => $request->body,
                 "body_ar" => $request->body_ar,
+                "in_slider" => $in_slider,
                 "options" => [
                     "tag_ids" => $tags,
-                    "category_ids" => [],
                     "team_ids" => $teams,
                     "league_ids" => $leagues,
                     "player_ids" => $players
                 ],
-                "status" => (bool) $request->status,
-                "video_url" => $request->type === NewsType::Video->value ? url("/") . "/storage" . "/$videoUrl" : null,
+                "status" => $scheduled ? 0 : $status,
+                "video_url" => $request->type === NewsType::Video->value ? $videoUrl : null,
                 "scheduled_for" => $scheduled,
                 "user_id" => Auth::id()
             ];
@@ -105,23 +112,22 @@ class ArticleService
             if ($request->isMethod("PUT")) DropImageAction::handle($article, Article::class, $imagePath);
 
             $path = $request->images[0]->store($imagePath, "public");
-            $url = url("/") . "/storage" . "/$path";
             $imagePaths[] = $path;
-
+            $imageArray = explode("/", $path);
+            $name = array_pop($imageArray);
+            
             $article->image()->updateOrCreate(["imageable_id" => $article->id], [
-                // "imageable_id" => $article->id, 
-                // "imageable_type" => Article::class, 
-                "url" => $url, 
+                "name" => $name, 
             ]);
-
-            // Image::insert($images);
 
             if ((bool) $request->in_slider) {
                 $article->slider()->updateOrCreate(["sliderable_id" => $article->id], [
+                    "slug" => $slug,
+                    "slug_ar" => $slugAr,
                     "title" => $request->title,
                     "title_ar" => $request->title_ar,
                     "type" => $request->type,
-                    "url" => $url,
+                    "name" => $name,
                 ]);
             }
 
@@ -131,12 +137,14 @@ class ArticleService
                     "meta_title_ar" => $request->meta_title_ar,
                     "meta_desc" => $request->meta_desc,
                     "meta_desc_ar" => $request->meta_desc_ar,
-                    "keywords" => implode(", ", $keywords),
-                    "keywords_ar" => implode(", ", $keywords),
+                    "keywords" => $request->keywords,
+                    "keywords_ar" => $request->keywords_ar,
                 ]);
             }
 
             DB::commit();
+
+            Cache::forget("home-page-article");
 
             OptimizeImageJob::dispatch($imagePaths);
 

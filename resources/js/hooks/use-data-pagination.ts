@@ -1,14 +1,14 @@
-import { MatchCardProp } from "@/types/match"
+import { FixtureMatch, MatchCardProp } from "@/types/match"
 
 
 type GroupType = {
-    [index: string]: MatchCardProp[]
+    [index: string]: FixtureMatch[]
 }
 
-export default function useDataPagination(data: MatchCardProp[], perPage: number): MatchCardProp[][][] {
+export default function useDataPagination(data: FixtureMatch[], perPage: number): FixtureMatch[][][] {
     let paginatedData = []
     let group: GroupType = {}
-    let groupList: MatchCardProp[][] = []
+    let groupList: FixtureMatch[][] = []
 
     for (const item of data) {
         if(Object.keys(group).includes(item.date)) {

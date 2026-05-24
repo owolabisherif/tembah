@@ -1,4 +1,5 @@
 import Loader from '@/components/loader';
+import MessageBox, { MessageType } from '@/components/ui/message-box';
 import Paginator from '@/components/ui/paginator';
 import Status from '@/components/ui/status';
 import useStoredPage from '@/hooks/use-stored-page';
@@ -23,9 +24,12 @@ type NewsType = {
     categories: string[] | null;
     teams: string[] | null;
     leagues: string[] | null;
+    players: string[] | null;
     created: string;
     scheduled: string | null;
     images: string[];
+    is_top: boolean;
+    in_slider: boolean;
     author: {
         id: number;
         name: string;
@@ -36,6 +40,8 @@ export default function Index() {
     const [rows, setRows] = useState<NewsType[]>([]);
     const [pageCount, setPageCount] = useState(0);
     const [itemPerPage, setItemPerPage] = useState(0);
+    const [message, setMessage] = useState<string | null>(null);
+    const [type, setType] = useState<MessageType>('success');
     const { t, i18n } = useTranslation();
 
     useEffect(() => {
@@ -43,7 +49,13 @@ export default function Index() {
     }, []);
 
     const handleGetRows = async () => {
-        const res = await axios.get<PaginatedType>(route('news.show') + `?page=${useStoredPage('news-page')}`);
+        let res = await axios.get<PaginatedType>(route('news.show') + `?page=${useStoredPage('news-page')}`);
+
+        if (!res.data.data.length) {
+            localStorage.setItem('news-page', '1');
+            res = await axios.get<PaginatedType>(route('news.show'));
+        }
+
         setData(res.data);
     };
 
@@ -57,7 +69,21 @@ export default function Index() {
         setPageCount(payload.last_page);
         setItemPerPage(payload.per_page);
         setRows(payload.data as NewsType[]);
-        console.log(payload);
+    };
+
+    const handleDelete = async (news: NewsType) => {
+        try {
+            if (confirm('You are about to perform a delete request. proceed ?')) {
+                const res = await axios.delete(route('news.delete', { news: news.id }));
+                setType('success');
+                setMessage(res.data.message);
+
+                handleGetRows();
+            }
+        } catch (error: any) {
+            setType('error');
+            setMessage(error.response.data.message);
+        }
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -76,9 +102,17 @@ export default function Index() {
             <Head title="List" />
             <div className="flex items-center justify-end px-3 py-3">
                 <Link href={route('news.create')} className="rounded-sm bg-blue-900 px-3 py-2 text-sm text-white hover:bg-blue-700">
-                    ADD NEW
+                    ADD NEWS
                 </Link>
             </div>
+            <div className="px-3 py-3">
+                {message && (
+                    <MessageBox type={type} close={() => setMessage(null)} className="mb-5">
+                        <p>{message}</p>
+                    </MessageBox>
+                )}
+            </div>
+
             {Boolean(rows.length) ? (
                 <Paginator
                     data={rows}
@@ -98,7 +132,10 @@ export default function Index() {
                                         <th className="text-brand-slate px-2 py-4 text-left text-sm">{t('Categories')}</th>
                                         <th className="text-brand-slate px-2 py-4 text-left text-sm">{t('Leagues')}</th>
                                         <th className="text-brand-slate px-2 py-4 text-left text-sm">{t('Teams')}</th>
+                                        <th className="text-brand-slate px-2 py-4 text-left text-sm">{t('Players')}</th>
                                         <th className="text-brand-slate px-2 py-4 text-left text-sm">{t('Author')}</th>
+                                        <th className="text-brand-slate px-2 py-4 text-left text-sm">{t('Top news')}</th>
+                                        <th className="text-brand-slate px-2 py-4 text-left text-sm">{t('In slider')}</th>
                                         <th className="text-brand-slate px-2 py-4 text-left text-sm whitespace-nowrap">{t('Scheduled')}</th>
                                         <th className="text-brand-slate px-2 py-4 text-left text-sm whitespace-nowrap">{t('Created')}</th>
                                         <th className="text-brand-slate px-2 py-4 text-left text-sm">{t('Status')}</th>
@@ -138,7 +175,12 @@ export default function Index() {
                                                 </div>
                                             </td>
                                             <td className="px-2 py-1 text-left text-xs capitalize">
-                                                <Status text={item.type} bgColor={item.type == 'text' ? 'bg-green-500' : 'bg-yellow-500'} />
+                                                <Status
+                                                    text={item.type}
+                                                    bgColor={
+                                                        item.type == 'text' ? 'bg-blue-500' : item.type == 'video' ? 'bg-purple-500' : 'bg-pink-500'
+                                                    }
+                                                />
                                             </td>
                                             <td className="px-2 py-1 text-left text-xs capitalize">
                                                 {item.tags ? (
@@ -184,8 +226,31 @@ export default function Index() {
                                                     <p>None</p>
                                                 )}
                                             </td>
+                                            <td className="px-2 py-1 text-left text-xs capitalize">
+                                                {item.players ? (
+                                                    item.players.map((item, index) => (
+                                                        <p className="text-xs" key={index}>
+                                                            {item}
+                                                        </p>
+                                                    ))
+                                                ) : (
+                                                    <p>None</p>
+                                                )}
+                                            </td>
                                             <td className="text-brand-slate px-2 py-1 text-left text-sm whitespace-nowrap">
                                                 {item.author ? item.author.name : 'Tembah'}
+                                            </td>
+                                            <td className="text-brand-slate px-2 py-1 text-left text-sm">
+                                                <Status
+                                                    text={Boolean(item.is_top) ? 'Yes' : 'No'}
+                                                    bgColor={Boolean(item.is_top) ? 'bg-green-500' : 'bg-yellow-500'}
+                                                />
+                                            </td>
+                                            <td className="text-brand-slate px-2 py-1 text-left text-sm">
+                                                <Status
+                                                    text={Boolean(item.in_slider) ? 'Yes' : 'No'}
+                                                    bgColor={Boolean(item.in_slider) ? 'bg-green-500' : 'bg-yellow-500'}
+                                                />
                                             </td>
                                             <td className="text-brand-slate px-2 py-1 text-left text-sm whitespace-nowrap">
                                                 {item.scheduled ?? 'Not applicable'}
@@ -215,7 +280,10 @@ export default function Index() {
                                                     </Link>
                                                 </div>
                                                 <div className="h-8 w-8">
-                                                    <button className="hover:bg-brand-black/90 flex w-full cursor-pointer items-center justify-center rounded-sm bg-red-500 p-1 font-bold text-white disabled:cursor-not-allowed">
+                                                    <button
+                                                        onClick={() => handleDelete(item)}
+                                                        className="hover:bg-brand-black/90 flex w-full cursor-pointer items-center justify-center rounded-sm bg-red-500 p-1 font-bold text-white disabled:cursor-not-allowed"
+                                                    >
                                                         <TrashIcon className="w-5 text-white" />
                                                     </button>
                                                 </div>

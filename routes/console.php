@@ -10,4 +10,6 @@ Artisan::command('inspire', function () {
 
 
 Schedule::command("app:refresh-game")->everyMinute()->withoutOverlapping();
+Schedule::command("post-scheduled-news")->cron("* * * * *")->withoutOverlapping();
+Schedule::command("post-scheduled-article")->cron("* * * * *")->withoutOverlapping();
 // Schedule::command("app:get-live-matches")->everyThirtySeconds()->withoutOverlapping();

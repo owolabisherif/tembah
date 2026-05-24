@@ -2,8 +2,10 @@
 
 namespace App\Transformers;
 
+use App\Jobs\StoreFixturesJob;
 use App\Models\Team;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use League\Fractal\TransformerAbstract;
 
@@ -12,14 +14,18 @@ class LeagueFixtureCustomTransformer extends TransformerAbstract
     public $season;
     private $fixtures = array();
     private $badFixtures = array();
+    private array $fixturesToStore = [];
+    private array $leagueData;
 
-    public function __construct($season)
+    public function __construct($season, private $leagueId = '')
     {
         $this->season = $season;
     }
 
     public function getFixtures(array $data)
     {
+        $this->leagueData = $data;
+
         $allFixtures = array();
 
         if (@$data["results"]["tournament"] && array_key_exists('stage', @$data["results"]["tournament"])) {
@@ -37,10 +43,11 @@ class LeagueFixtureCustomTransformer extends TransformerAbstract
             } else {
                 
                 foreach (@$data["results"]["tournament"]["stage"] as $stages) {
+                    
                     if (@$stages["match"]["@date"]) {
                         $this->handleBadData($stages["match"]);
                     } elseif(array_key_exists("week", $stages)) {
-                        foreach ($stages["week"] as $week) {
+                        foreach ($stages["week"] as $week) { 
                             if (@$week["match"]["@date"]) {
                                 $this->handleBadData($week["match"]);
                             } else {
@@ -50,7 +57,11 @@ class LeagueFixtureCustomTransformer extends TransformerAbstract
                     } elseif (array_key_exists("aggregate", $stages)) {
                         $allFixtures = [...$allFixtures, ...$stages["aggregate"]["match"]];
                     } else {
-                        $allFixtures = [...$allFixtures, ...$stages["match"]];
+                        if(@$stages['match']) {
+                            $allFixtures = [...$allFixtures, ...$stages["match"]];
+                        } else {
+                            Log::info($stages);
+                        };
                     }
                 }
             }
@@ -120,36 +131,61 @@ class LeagueFixtureCustomTransformer extends TransformerAbstract
 
                 $sort = Carbon::parse(@$match['@date'] . " " . @$match["@time"])->setTimezone($userTz)->timestamp;
                 
-                array_push($matches, [
-                    "date" => Carbon::parse(@$match["@date"])->setTimezone($userTz)->format("M d, Y"),
+                $homeTeamSlug = Str::slug(@$match["localteam"]["@name"]);
+                $awayTeamSlug = Str::slug(@$match["visitorteam"]["@name"]);
+                $date = Carbon::parse(@$match["@date"])->format("Y-m-d");
+
+                $payload = [
+                    "date" => $date,
                     "isNext" => $next->gte($now),
                     "time" => Carbon::parse(@$match["@time"])->setTimezone($userTz)->format("h:i A"),
+                    'slug' => $homeTeamSlug . "-vs-" . $awayTeamSlug . "-" . @$match['@static_id'],
+                    "staticId" => @$match['@static_id'] ?? "",
                     "sort" => $sort,
                     "status" => @$match["@status"],
                     "venue" => @$match["@venue"],
                     "venueCity" => @$match["@venue_city"],
                     "attendance" => @$match["@attendance"],
                     "homeTeam" => [
-                        "slug" => Str::slug(@$match["localteam"]["@name"]),
+                        "slug" => $homeTeamSlug,
                         "teamId" => @$match["localteam"]["@id"],
                         "logo" => @$localHasLogo->image ?? null,
                         "name" => @$match["localteam"]["@name"],
+                        "nameAr" => getArabic(@$match["localteam"]["@name"]),
                         "score" => (int) @$match["localteam"]["@score"],
                         "ftScore" => (int) @$match["localteam"]["@ft_score"],
                         "etScore" => (int) @$match["localteam"]["@et_score"],
                         "penScore" => (int) @$match["localteam"]["@pen_score"],
                     ],
                     "awayTeam" => [
-                        "slug" => Str::slug(@$match["visitorteam"]["@name"]),
+                        "slug" => $awayTeamSlug,
                         "teamId" => @$match["visitorteam"]["@id"],
                         "logo" => @$visitorHasLogo->image ?? null,
                         "name" => @$match["visitorteam"]["@name"],
+                        "nameAr" => getArabic(@$match["visitorteam"]["@name"]),
                         "score" => (int) @$match["visitorteam"]["@score"],
                         "ftScore" => (int) @$match["visitorteam"]["@ft_score"],
                         "etScore" => (int) @$match["visitorteam"]["@et_score"],
                         "penScore" => (int) @$match["visitorteam"]["@pen_score"],
                     ]
-                ]);
+                ];
+
+                array_push($matches, $payload);
+
+                if (@$payload['staticId'] != "") {
+                    $this->fixturesToStore = [...$this->fixturesToStore, [
+                        "league_id" => $this->leagueId,
+                        "home_team_id" => $payload["homeTeam"]["teamId"],
+                        "away_team_id" => $payload["awayTeam"]["teamId"],
+                        "slug" => $homeTeamSlug . "-vs-" . $awayTeamSlug . "-" . $payload["staticId"],
+                        "fixture_id" => !empty(@$payload["fixId"])  ? @$payload["fixId"] : null,
+                        "static_id" => $payload["staticId"],
+                        "league" => @$this->leagueData["results"]["tournament"]["@league"],
+                        "country" => @$this->leagueData["results"]["@country"],
+                        "date" => $date,
+                        "match" => json_encode($payload)
+                    ]];
+                }
             }
         }
 
@@ -165,6 +201,8 @@ class LeagueFixtureCustomTransformer extends TransformerAbstract
 
 
     public function result(): array {
+        StoreFixturesJob::dispatch($this->fixturesToStore);
+
         return $this->fixtures;
     }
 }

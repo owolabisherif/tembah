@@ -37,8 +37,8 @@ class StoreTeamImageJob implements ShouldQueue
 
             if(empty($this->teams)) return;
 
-            $key =  env("GOAL_SERVE_KEY");
-            $endPoint = env("GOAL_SERVE_ENDPOINT");
+            $key =  config('api.key');
+            $endPoint = config('api.endpoint');
             $teamToStore = [];
 
             foreach ($this->teams as $t) {
@@ -60,14 +60,14 @@ class StoreTeamImageJob implements ShouldQueue
                     continue;
                 }
 
-                $venuePath = "assets/images/venues/{$t}.jpeg";
-                $imagePath = "assets/images/teams/{$t}.jpeg";
+                $venuePath = "app/public/uploads/images/venues/{$t}.png";
+                $imagePath = "app/public/uploads/images/teams/{$t}.png";
 
-                $venueImage = @$teamCollection["venue_image"] ? base64ToImage($teamCollection["venue_image"], public_path($venuePath)) : null;
-                $teamImage = @$teamCollection["image"] ? base64ToImage($teamCollection["image"], public_path($imagePath)) : null;
+                $venueImage = @$teamCollection["venue_image"] ? base64ToImage($teamCollection["venue_image"], storage_path($venuePath)) : null;
+                $teamImage = @$teamCollection["image"] ? base64ToImage($teamCollection["image"], storage_path($imagePath)) : null;
     
-                $venue_image = $venueImage ? url($venuePath) : null;
-                $image = $teamImage ? url($imagePath) : null;
+                $venue_image = $venueImage ? "{$t}.png" : null;
+                $image = $teamImage ? "{$t}.png" : null;
 
                 $teamToStore[] = [
                     "team_id" => $team->id,
@@ -133,8 +133,8 @@ class StoreTeamImageJob implements ShouldQueue
                 continue;
             }
     
-            $venueImage = @$newTeam["venue_image"] ? base64ToImage($newTeam["venue_image"], public_path("assets/images/venues/{$newTeam['@id']}.jpeg")) : null;
-            $teamImage = @$newTeam["image"] ? base64ToImage($newTeam["image"], public_path("assets/images/teams/{$newTeam['@id']}.jpeg")) : null;
+            $venueImage = @$newTeam["venue_image"] ? base64ToImage($newTeam["venue_image"], storage_path("app/public/uploads/images/venues/{$newTeam['@id']}.png")) : null;
+            $teamImage = @$newTeam["image"] ? base64ToImage($newTeam["image"], storage_path("app/public/uploads/images/teams/{$newTeam['@id']}.png")) : null;
 
             try {
                 $nameAr = $arabic->en2ar(@$newTeam["name"]);
@@ -172,8 +172,8 @@ class StoreTeamImageJob implements ShouldQueue
                 "venue_city" => json_encode(@$newTeam["venue_city"]),
                 "venue_capacity" => @$newTeam["venue_capacity"],
                 "venue_capacity_ar" => $venueCapacityAr,
-                "venue_image" => $venueImage ? url("assets/images/venues/{$newTeam['@id']}.jpeg") : null,
-                "image" => $teamImage ? url("assets/images/teams/{$newTeam['@id']}.jpeg") : null,
+                "venue_image" => $venueImage ? "{$newTeam['@id']}.png" : null,
+                "image" => $teamImage ? "{$newTeam['@id']}.png" : null,
                 "squad" => json_encode(@$newTeam["squad"]),
                 "coach" => json_encode(@$newTeam["coach"]),
                 "transfers" => json_encode(@$newTeam["transfers"]),

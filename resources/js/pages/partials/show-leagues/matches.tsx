@@ -4,7 +4,7 @@ import Loader from '@/components/loader';
 import useDataPagination from '@/hooks/use-data-pagination';
 import useLeagueStore from '@/stores/use-league-store';
 import { SharedData } from '@/types';
-import { League, MatchCardProp } from '@/types/match';
+import { FixtureMatch, League } from '@/types/match';
 import { usePage } from '@inertiajs/react';
 import { PropsWithChildren, useEffect, useState } from 'react';
 import Ad from '../ad';
@@ -14,7 +14,7 @@ export default function Matches({ ...props }: PropsWithChildren<League>) {
     const { leagues, loading, initLeague, updateLeagueData } = useLeagueStore();
     const currentSeason = usePage<SharedData>().props.currentSeason;
     const [initialSlideIndex, setInitialSlideIndex] = useState(0);
-    const [matches, setMatches] = useState<MatchCardProp[][][]>([]);
+    const [matches, setMatches] = useState<FixtureMatch[][][]>([]);
 
     useEffect(() => {
         if (leagueId) {
@@ -32,8 +32,6 @@ export default function Matches({ ...props }: PropsWithChildren<League>) {
         const pagination = useDataPagination(games, 3);
 
         setMatches(pagination);
-
-        // console.log(games);
 
         const nextGame = games.find((item) => item.isNext == true);
 

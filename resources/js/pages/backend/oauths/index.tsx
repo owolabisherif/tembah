@@ -1,7 +1,7 @@
+import Facebook from '@/components/svgs/facebook';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { FacebookIcon } from 'lucide-react';
 
 export default function Index() {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -23,7 +23,7 @@ export default function Index() {
                     >
                         <p>Authenticate with facebook</p>
 
-                        <FacebookIcon />
+                        <Facebook />
                     </a>
                 </div>
             </div>

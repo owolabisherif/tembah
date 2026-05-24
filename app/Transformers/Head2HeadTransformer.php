@@ -155,16 +155,19 @@ class Head2HeadTransformer
                     "country" => @$top50s->{"@category"},
                     "leagueId" => @$top50s->{"@league_id"},
                     "league" => @$top50s->{"@league"},
+                    "leagueAr" => getArabic(@$top50s->{"@league"}),
                     "staticId" => @$top50s->{"@static_id"},
                     "date" => Carbon::parse(@$top50s->{"@date"})->format("F j, Y"),
                     "homeTeam" => [
                         "id" => $top50s->{"@id1"},
                         "name" => $top50s->{"@team1"},
+                        "nameAr" => getArabic($top50s->{"@team1"}),
                         "score" => $top50s->{"@team1_score"},
                     ],
                     "awayTeam" => [
                         "id" => @$top50s->{"@id2"},
                         "name" => @$top50s->{"@team2"},
+                        "nameAr" => getArabic($top50s->{"@team2"}),
                         "score" => @$top50s->{"@team2_score"},
                     ],
                 ]
@@ -178,16 +181,19 @@ class Head2HeadTransformer
                     "country" => @$top50["@category"],
                     "leagueId" => @$top50["@league_id"],
                     "league" => @$top50["@league"],
+                    "leagueAr" => getArabic(@$top50["@league"]),
                     "staticId" => @$top50["@static_id"],
                     "date" => Carbon::parse(@$top50["@date"])->format("F j, Y"),
                     "homeTeam" => [
                         "id" => $top50["@id1"],
                         "name" => $top50["@team1"],
+                        "nameAr" => getArabic($top50["@team1"]),
                         "score" => $top50["@team1_score"],
                     ],
                     "awayTeam" => [
                         "id" => @$top50["@id2"],
                         "name" => @$top50["@team2"],
+                        "nameAr" => getArabic(@$top50["@team2"]),
                         "score" => @$top50["@team2_score"],
                     ],
                 ];

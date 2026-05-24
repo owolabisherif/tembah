@@ -4,11 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import MessageBox from '@/components/ui/message-box';
 import { Select as RadSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useUrlToImageConverter from '@/hooks/use-url-to-image-converter';
 import { cn } from '@/lib/utils';
 import useAdValidator from '@/validators/use-ad-validator';
+import { router } from '@inertiajs/react';
 import axios from 'axios';
 import { LoaderCircleIcon } from 'lucide-react';
-import { ChangeEvent, FormEvent, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import { AdFormProp } from '../create';
 
@@ -19,6 +21,7 @@ type AdFormType = {
     url: string;
     priority: number;
     starts_at: Date;
+    _method: string;
     ends_at: Date;
     status: boolean;
     images: any[];
@@ -36,9 +39,10 @@ interface SelectType {
     readonly isDisabled?: boolean;
 }
 
-export default function AdForm({ types, ...prop }: AdFormProp) {
+export default function AdForm({ types, ad, ...prop }: AdFormProp) {
     const dropZone = useRef<any>(null);
     const [processing, setProcessing] = useState<boolean>(false);
+    const [editing, setEditing] = useState<boolean>(false);
     const [message, setMessage] = useState<string[]>([]);
     const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('error');
     const [form, setForm] = useState<AdFormType>({
@@ -47,6 +51,7 @@ export default function AdForm({ types, ...prop }: AdFormProp) {
         type: '',
         url: '',
         priority: 0,
+        _method: 'post',
         starts_at: new Date(),
         ends_at: new Date(),
         status: true,
@@ -65,9 +70,10 @@ export default function AdForm({ types, ...prop }: AdFormProp) {
         setForm({
             id: null,
             title: '',
-            type: '',
+            type: '600x600',
             url: '',
             priority: 0,
+            _method: 'post',
             status: true,
             starts_at: new Date(),
             ends_at: new Date(),
@@ -134,7 +140,11 @@ export default function AdForm({ types, ...prop }: AdFormProp) {
             setMessageType('success');
             setMessage((err) => [res.data.message]);
 
-            resetForm();
+            if (editing) {
+                router.get(route('ad.index'));
+            } else {
+                resetForm();
+            }
         } catch (error) {
             setMessageType('error');
             setMessage((err) => [...err, (error as any).response.data.message]);
@@ -142,6 +152,40 @@ export default function AdForm({ types, ...prop }: AdFormProp) {
         } finally {
             setProcessing(false);
         }
+    };
+
+    useEffect(() => {
+        handleEdit();
+    }, [ad]);
+
+    const handleEdit = async () => {
+        try {
+            if (ad) {
+                setEditing(true);
+
+                let image = await useUrlToImageConverter(ad.image.name);
+
+                setForm((values) => ({
+                    ...values,
+                    id: ad.id,
+                    title: ad.title,
+                    url: ad.url,
+                    type: ad.type,
+                    status: ad.status,
+                    starts_at: ad.starts_at,
+                    ends_at: ad.ends_at,
+                    priority: +ad.priority,
+                    meta_title: ad.seo ? ad.seo.meta_title : '',
+                    meta_title_ar: ad.seo ? ad.seo.meta_title_ar : '',
+                    meta_desc: ad.seo ? ad.seo.meta_desc : '',
+                    meta_desc_ar: ad.seo ? ad.seo.meta_desc_ar : '',
+                    _method: 'put',
+                    images: [image],
+                }));
+
+                dropZone.current.getPreview(image);
+            }
+        } catch (error) {}
     };
 
     return (
@@ -216,7 +260,7 @@ export default function AdForm({ types, ...prop }: AdFormProp) {
                             <div className="col-span-12 mt-10">
                                 <div className="flex w-full justify-end">
                                     <Button className="cursor-pointer" disabled={processing}>
-                                        {processing && <LoaderCircleIcon className="size-5 animate-spin" />} SUBMIT
+                                        {processing && <LoaderCircleIcon className="size-5 animate-spin" />} {editing ? 'UPDATE' : 'SUBMIT'}
                                     </Button>
                                 </div>
                             </div>

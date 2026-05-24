@@ -2,12 +2,12 @@ import SubmitScheduleDropdown from '@/components/submit-schedule-button';
 import DropZone from '@/components/ui/dropzone';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import MessageBox from '@/components/ui/message-box';
+import MessageBox, { MessageType } from '@/components/ui/message-box';
 import QuillEditor from '@/components/ui/quill-editor';
 import { Select as RadSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useUrlToImageConverter from '@/hooks/use-url-to-image-converter';
 import { cn } from '@/lib/utils';
-import { CreateNewsProp, NewsFormType } from '@/types';
+import { CreateNewsProp, NewOption, NewsFormType, SelectType } from '@/types';
 import useNewsValidator from '@/validators/use-news-validator';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
@@ -16,21 +16,7 @@ import { ChangeEvent, startTransition, useEffect, useOptimistic, useRef, useStat
 import makeAnimated from 'react-select/animated';
 import Select from 'react-select/creatable';
 
-interface SelectType {
-    readonly value: string;
-    readonly label: string;
-    readonly color: string;
-    readonly isFixed?: boolean;
-    readonly isDisabled?: boolean;
-}
-
-type NewOption = {
-    title?: string;
-    titleAr?: string;
-    location?: string;
-};
-
-export default function NewsForm({ newsTypes, authors, leagues, teams, news }: CreateNewsProp) {
+export default function NewsForm({ newsTypes, authors, leagues, teams, news, players, countries }: CreateNewsProp) {
     const bodyRef = useRef<any>(null);
     const bodyArRef = useRef<any>(null);
     const submitButtonRef = useRef<any>(null);
@@ -40,9 +26,11 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
     const [processing, setProcessing] = useState<boolean>(false);
     const [teamOptions, setTeamOptions] = useState<SelectType[]>([]);
     const [leagueOptions, setLeagueOptions] = useState<SelectType[]>([]);
+    const [playerOptions, setPlayerOptions] = useState<SelectType[]>([]);
+    const [countryOptions, setCountryOptions] = useState<SelectType[]>([]);
     const [tags, setTags] = useState<SelectType[]>([]);
     const [message, setMessage] = useState<string[]>([]);
-    const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('error');
+    const [messageType, setMessageType] = useState<MessageType>('error');
     const [productCategories, setProductCategories] = useState<SelectType[]>([]);
     const [productTags, setProductTags] = useState<SelectType[]>([]);
     const [isEditing, setIsEditing] = useState(false);
@@ -61,11 +49,15 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
         meta_title_ar: '',
         meta_desc: '',
         meta_desc_ar: '',
+        keywords: '',
+        keywords_ar: '',
         action: null,
         categories: [],
         tags: [],
         leagues: [],
         teams: [],
+        players: [],
+        countries: [],
         status: true,
         is_featured: false,
         in_top: false,
@@ -79,22 +71,27 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
     }, []);
 
     useEffect(() => {
-        if (news) {
+        if (news && Object.entries(news).length) {
             handleFormPrefill();
         }
     }, [news]);
 
     const handleFormPrefill = async () => {
         setIsEditing(true);
-        let images: any = [];
+        let images: any = [''];
 
-        for (const image of news.images) {
-            let file = await useUrlToImageConverter(image.url);
+        if (news.images.length) {
+            // reset
+            images = [];
 
-            images = [...images, file];
+            for (const image of news.images) {
+                let file = await useUrlToImageConverter(image.name);
+
+                images = [...images, file];
+            }
+
+            if (images.length) dropZone.current.getPreview(images[0]);
         }
-
-        dropZone.current.getPreview(images[0]);
 
         let video: string | File = '';
 
@@ -107,32 +104,41 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
             ...values,
             id: news.id,
             status: Boolean(news.status),
-            type: news.type == 'text' ? 'text' : 'video',
+            type: news.type == 'text' ? 'text' : news.type == 'video' ? 'video' : 'transfer',
             in_top: Boolean(news.is_top),
+            in_slider: Boolean(news.in_slider),
             title: news.title,
             title_ar: news.title_ar,
             action: news.scheduled_for ? { type: 'schedule', payload: news.scheduled_for } : { type: 'now', payload: '' },
             body: news.body,
             author: news.author ? `${news.author_id}` : null,
             body_ar: news.body_ar,
-            meta_title: news.seo ? news.seo.meta_title : '',
-            meta_title_ar: news.seo ? news.seo.meta_title_ar : '',
-            meta_desc: news.seo ? news.seo.meta_desc : '',
-            meta_desc_ar: news.seo ? news.seo.meta_desc_ar : '',
+            meta_title: news?.seo?.meta_title ? news?.seo?.meta_title : '',
+            meta_title_ar: news?.seo?.meta_title_ar ? news?.seo?.meta_title_ar : '',
+            meta_desc: news?.seo?.meta_desc ? news?.seo?.meta_desc : '',
+            meta_desc_ar: news?.seo?.meta_desc_ar ? news?.seo?.meta_desc_ar : '',
+            keywords: news?.seo?.keywords ? news?.seo?.keywords : '',
+            keywords_ar: news?.seo?.keywords_ar ? news?.seo?.keywords_ar : '',
             video: news.video_url ? video : '',
             _method: 'put',
-            tags:
-                news.tags.length &&
-                news.tags.map((item: any) => ({ value: item.id.toString(), label: `${item.title} (${item.title_ar})`, color: '#000000' })),
-            categories:
-                news.categories.length &&
-                news.tags.map((item: any) => ({ value: item.id.toString(), label: `${item.title} (${item.title_ar})`, color: '#000000' })),
-            teams:
-                news.teams.length &&
-                news.teams.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' })),
-            leagues:
-                news.leagues.length &&
-                news.leagues.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' })),
+            tags: news.tags.length
+                ? news.tags.map((item: any) => ({ value: item.id.toString(), label: `${item.title} (${item.title_ar})`, color: '#000000' }))
+                : [],
+            categories: news.categories.length
+                ? news.tags.map((item: any) => ({ value: item.id.toString(), label: `${item.title} (${item.title_ar})`, color: '#000000' }))
+                : [],
+            teams: news.teams.length
+                ? news.teams.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' }))
+                : [],
+            leagues: news.leagues.length
+                ? news.leagues.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' }))
+                : [],
+            players: news.players.length
+                ? news.players.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' }))
+                : [],
+            countries: news.countries.length
+                ? news.countries.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' }))
+                : [],
             images: images,
         }));
 
@@ -146,6 +152,8 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
     useEffect(() => {
         let teamData: SelectType[] = [];
         let leagueData: SelectType[] = [];
+        let playerData: SelectType[] = [];
+        let countryData: SelectType[] = [];
 
         if (leagues?.length) {
             for (const league of leagues) {
@@ -162,7 +170,23 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
 
             setTeamOptions(teamData);
         }
-    }, [leagues, teams]);
+
+        if (players?.length) {
+            for (const player of players) {
+                playerData = [...playerData, { value: player.value.toString(), label: player.text, color: '#000000' }];
+            }
+
+            setPlayerOptions(playerData);
+        }
+
+        if (countries?.length) {
+            for (const country of countries) {
+                countryData = [...countryData, { value: country.value.toString(), label: country.text, color: '#000000' }];
+            }
+
+            setCountryOptions(countryData);
+        }
+    }, [leagues, teams, players, countries]);
 
     const resetForm = () => {
         setForm({
@@ -180,11 +204,15 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
             meta_title_ar: '',
             meta_desc: '',
             meta_desc_ar: '',
+            keywords: '',
+            keywords_ar: '',
             action: null,
             categories: [],
             tags: [],
             leagues: [],
             teams: [],
+            players: [],
+            countries: [],
             status: true,
             is_featured: false,
             in_top: false,
@@ -660,6 +688,46 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
                                 />
                             </div>
 
+                            <div className="col-span-12 mb-1">
+                                <Label htmlFor="players">Related Player(s)</Label>
+                                <Select
+                                    closeMenuOnSelect={false}
+                                    components={makeAnimated()}
+                                    isSearchable
+                                    isClearable
+                                    isMulti
+                                    name="players"
+                                    defaultValue={[]}
+                                    value={form.players}
+                                    options={playerOptions}
+                                    onChange={(val) => handleCustomChange('players', val)}
+                                    classNames={{
+                                        control: (state) =>
+                                            '!border-input !rounded-md !outline-none !active:outline-none !shadow-xs !focus-visible:ring-[3px]',
+                                    }}
+                                />
+                            </div>
+
+                            <div className="col-span-12 mb-1">
+                                <Label htmlFor="countries">Related Country</Label>
+                                <Select
+                                    closeMenuOnSelect={false}
+                                    components={makeAnimated()}
+                                    isSearchable
+                                    isClearable
+                                    isMulti
+                                    name="countries"
+                                    defaultValue={[]}
+                                    value={form.countries}
+                                    options={countryOptions}
+                                    onChange={(val) => handleCustomChange('countries', val)}
+                                    classNames={{
+                                        control: (state) =>
+                                            '!border-input !rounded-md !outline-none !active:outline-none !shadow-xs !focus-visible:ring-[3px]',
+                                    }}
+                                />
+                            </div>
+
                             {/* <div className="col-span-12 mb-1">
                                 <Label htmlFor="feature">Add to FEATURED list ?</Label>
                                 <RadSelect
@@ -778,6 +846,38 @@ export default function NewsForm({ newsTypes, authors, leagues, teams, news }: C
                                 value={form.meta_desc_ar ?? ''}
                                 onChange={(e) => handleChange(e)}
                             />
+                        </div>
+
+                        <div className="mt-5 mb-2">
+                            <p className="text-sm font-bold text-red-500">
+                                <span className="text-black">Note:</span> Keywords should be comma seperated.
+                            </p>
+                        </div>
+                        <div className="col-span-12 mb-1">
+                            <Label htmlFor="keywords">Keywords</Label>
+                            <Input
+                                id="keywords"
+                                type="text"
+                                name="keywords"
+                                placeholder="Enter keywords"
+                                value={form.keywords ?? ''}
+                                onChange={(e) => handleChange(e)}
+                            />
+                            {errorKeys.includes('keywords') && <p className="text-xs text-red-500">{messages['keywords']}</p>}
+                        </div>
+
+                        <div className="col-span-12 mb-10">
+                            <Label htmlFor="keywords_ar">Keywords (Arabic)</Label>
+                            <Input
+                                id="keywords_ar"
+                                type="text"
+                                name="keywords_ar"
+                                dir="rtl"
+                                placeholder="Enter keywords (arabic)"
+                                value={form.keywords_ar ?? ''}
+                                onChange={(e) => handleChange(e)}
+                            />
+                            {errorKeys.includes('keywords_ar') && <p className="text-xs text-red-500">{messages['keywords_ar']}</p>}
                         </div>
                     </div>
                 </div>

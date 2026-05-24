@@ -2,10 +2,13 @@
 
 namespace App\Transformers;
 
+use App\Actions\StorePlayerAction;
+use App\Models\Player;
 use League\Fractal\TransformerAbstract;
 use App\Models\Team;
 use Carbon\Carbon;
 use stdClass;
+use Illuminate\Support\Str;
 
 class LeagueStatCustomTransformer extends TransformerAbstract
 {
@@ -104,7 +107,7 @@ class LeagueStatCustomTransformer extends TransformerAbstract
         $statistics = array();
 
         if (count($fixtures)) {
-            $userTz = @getUserLocation()?->time_zone?->name ?? "Asia\Qatar";
+            // $userTz = @getUserLocation()?->time_zone?->name ?? "Asia\Qatar";
             foreach (@$fixtures as $match) {
                 $localHasLogo = Team::whereTeamId(@$match["localteam"]["@id"])->first(["image"]);
                 $visitorHasLogo = Team::whereTeamId(@$match["visitorteam"]["@id"])->first(["image"]);
@@ -165,18 +168,33 @@ class LeagueStatCustomTransformer extends TransformerAbstract
     }
 
     private function handleStat($data) {
+        $player = Player::wherePlayerId($data["@playerid"])->first(["image", "shirt"]);
+
+        // if(!$player) $player = StorePlayerAction::handle($data["@playerid"], 0);
+
+        $teamName = $data["@team"] == 'visitorteam' ? @$data["@visitorteamname"] : @$data["@localteamname"];
+
+
         if (array_key_exists($data["@playerid"], $this->goals)) {
             $this->goals[$data["@playerid"]]["value"]++;
         } else {
+           
             $this->goals[$data["@playerid"]] = [
                 "player" => [
                     "id" => (int) $data["@playerid"],
+                    "slug" => Str::slug($data["@player"]),
+                    "slugAr" => makeArabicSlug(getArabic($data["@player"])),
                     "name" => $data["@player"],
-                    "image" => null
+                    "nameAr" => getArabic($data["@player"]),
+                    "image" => @$player->image,
+                    "shirt" => @$player->shirt ?? 0
                 ],
                 "team" => [
                     "id" => $data["@team"] == 'visitorteam' ? (int) @$data["@visitorteamid"] : (int) @$data["@localteamid"],
-                    "name" => $data["@team"] == 'visitorteam' ? @$data["@visitorteamname"] : @$data["@localteamname"],
+                    "slug" => Str::slug($teamName),
+                    "slugAr" => makeArabicSlug(getArabic($teamName)),
+                    "name" => $teamName,
+                    "nameAr" => getArabic($teamName),
                     "logo" =>  $data["@team"] == 'visitorteam' ? @$data["@visitorteamlogo"] : @$data["@localteamlogo"],
                 ],
                 "value" => 1
@@ -190,12 +208,19 @@ class LeagueStatCustomTransformer extends TransformerAbstract
                 $this->assists[$data["@assistid"]] = [
                     "player" => [
                         "id" => (int) $data["@assistid"],
+                        "slug" => Str::slug($data["@assist"]),
+                        "slugAr" => makeArabicSlug(getArabic($data["@assist"])),
                         "name" => $data["@assist"],
-                        "image" => null
+                        "nameAr" => getArabic($data["@assist"]),
+                        "image" => @$player->image,
+                        "shirt" => @$player->shirt ?? 0
                     ],
                     "team" => [
                         "id" => $data["@team"] == 'visitorteam' ? (int) @$data["@visitorteamid"] : (int) @$data["@localteamid"],
-                        "name" => $data["@team"] == 'visitorteam' ? @$data["@visitorteamname"] : @$data["@localteamname"],
+                        "slug" => Str::slug($teamName),
+                        "slugAr" => makeArabicSlug(getArabic($teamName)),
+                        "name" => $teamName,
+                        "nameAr" => getArabic($teamName),
                         "logo" =>  $data["@team"] == 'visitorteam' ? @$data["@visitorteamlogo"] : @$data["@localteamlogo"],
                     ],
                     "value" => 1
@@ -213,12 +238,19 @@ class LeagueStatCustomTransformer extends TransformerAbstract
                 $this->goalsPlusAssists[$key] = [
                     "player" => [
                         "id" => $item["player"]["id"],
+                        "slug" => $item["player"]["slug"],
+                        "slugAr" => $item["player"]["slugAr"],
                         "name" => $item["player"]["name"],
-                        "image" => $item["player"]["image"]
+                        "nameAr" => $item["player"]["nameAr"],
+                        "image" => $item["player"]["image"],
+                        "shirt" => $item["player"]["shirt"],
                     ],
                     "team" => [
                         "id" => $item["team"]["id"],
+                        "slug" => $item["team"]["slug"],
+                        "slugAr" => $item["team"]["slugAr"],
                         "name" => $item["team"]["name"],
+                        "nameAr" => $item["team"]["nameAr"],
                         "logo" =>  $item['team']["logo"],
                     ],
                     "value" => $playerAssist + $item["value"]

@@ -1,16 +1,20 @@
 import MatchCard from '@/components/match-card';
+import ViewAllButton from '@/components/ui/view-all-button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import useFixtureStore from '@/stores/use-fixtures-store';
 import { FixtureMatch, Fixtures } from '@/types/match';
 import { usePoll } from '@inertiajs/react';
 import axios from 'axios';
-import { ChevronRight } from 'lucide-react';
+import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 import Ad from './ad';
 import TopLeagues from './top-leagues';
 
-export default function LiverMatch() {
+export default function LiveMatch() {
     const [matches, setMatches] = useState<FixtureMatch[]>([]);
     const { getLiveFixtures } = useFixtureStore();
+    const isMobile = useIsMobile();
 
     const { start, stop } = usePoll(
         60000,
@@ -33,6 +37,10 @@ export default function LiverMatch() {
             stop();
         };
     }, []);
+
+    useEffect(() => {
+        if (isMobile) stop();
+    }, [isMobile]);
 
     const refreshLiveGames = async () => {
         try {
@@ -67,17 +75,14 @@ export default function LiverMatch() {
         <>
             <div className="flex h-full flex-col gap-y-5 rounded-sm">
                 <div className="flex flex-1 flex-col rounded-sm px-1">
-                    <div className="mb-4 flex items-center justify-between">
-                        <div className="flex items-center justify-start gap-x-3">
-                            <div className="h-4 w-8">
+                    <div className="mb-5 flex items-center justify-between">
+                        <div className="flex flex-1 items-center justify-start gap-x-3">
+                            <div className={cn('h-4 w-8')}>
                                 <img src="/assets/icons/live.png" className="h-full w-full object-contain" alt="" />
                             </div>
-                            <h1 className="m-0 p-0 text-lg font-bold text-black">Live Scores</h1>
+                            <h1 className="m-0 p-0 text-lg font-bold text-black">{t('Live Scores')}</h1>
                         </div>
-                        <div className="flex items-center">
-                            <p className="text-xs font-black">View all</p>
-                            <ChevronRight className="w-3" />
-                        </div>
+                        <ViewAllButton href={route('live.scores')} />
                     </div>
                     <div className="flex flex-1 flex-col gap-y-2 overflow-hidden">
                         <div className="scrollbar h-[30rem] overflow-x-hidden overflow-y-auto">
@@ -89,8 +94,8 @@ export default function LiverMatch() {
                                 ))
                             ) : (
                                 <div className="flex h-full flex-col gap-y-2">
-                                    <div className="flex h-fit animate-pulse items-center justify-center rounded-sm bg-green-400 p-5 shadow-sm">
-                                        <p className="font-bold text-white">Checking for live matches...</p>
+                                    <div className="flex h-fit animate-pulse items-center justify-center rounded-sm bg-green-400 p-5 shadow-sm dark:bg-neutral-400">
+                                        <p className="font-bold text-white">{t('Checking for live matches...')}</p>
                                     </div>
                                     <div className="b-red-500 h-full w-full flex-1 rounded-sm bg-gray-300">
                                         <Ad type="ver" />

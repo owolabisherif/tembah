@@ -18,8 +18,8 @@ class StandingsController extends Controller
 
     public function  __construct()
     {
-        $this->key =  env("GOAL_SERVE_KEY");
-        $this->endPoint = env("GOAL_SERVE_ENDPOINT");
+        $this->key =  config('api.key');
+        $this->endPoint = config('api.endpoint');
     }
 
     /**
@@ -28,28 +28,32 @@ class StandingsController extends Controller
     public function __invoke($league, $season = "")
     {
         try {
-            $ext = $season == "" ? ".xml?json=1" : "?season={$season}&json=1";
+            $res = Cache::remember("league-standings-now-$league", now()->addHours(2), function() use($league, $season) {
+                $ext = $season == "" ? ".xml?json=1" : "?season={$season}&json=1";
 
-            $standings = Standing::where(["league_id" => $league, "season" => $season])->first();
+                $standings = Standing::where(["league_id" => $league, "season" => $season])->first();
 
-            if($standings) return $this->getStandings(@$standings->data);
+                if ($standings) return $this->getStandings(@$standings->data);
 
-            if(isCurrentSeason($season)) {
-                return Cache::remember("standings-$league", RefreshTime::Fixtures->value, function () use ($league, $ext) {
+                if (isCurrentSeason($season)) {
+                    return Cache::remember("standings-$league", RefreshTime::Fixtures->value, function () use ($league, $ext) {
 
-                    $res = Http::get("{$this->endPoint}/{$this->key}/standings/{$league}{$ext}")->throw();
+                        $res = Http::get("{$this->endPoint}/{$this->key}/standings/{$league}{$ext}")->throw();
 
-                    return $this->getStandings($res->collect()->toArray());
-                });
-            }
-            
-            $res = Http::get("{$this->endPoint}/{$this->key}/standings/{$league}{$ext}")->throw();
+                        return $this->getStandings($res->collect()->toArray());
+                    });
+                }
 
-            $data = $res->collect()->toArray();
+                $res = Http::get("{$this->endPoint}/{$this->key}/standings/{$league}{$ext}")->throw();
 
-            $this->storeStanding($league, $season, $data);
+                $data = $res->collect()->toArray();
 
-            return $this->getStandings($data);
+                $this->storeStanding($league, $season, $data);
+
+                return $this->getStandings($data);
+            });
+
+            return $res;
     
         } catch(RequestException $e)  {
             // return response()->json(["status" =>  false, "message" => $e->getMessage()], $e->response->status());

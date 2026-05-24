@@ -3,6 +3,7 @@ import { usePlaceholderImage } from '@/hooks/user-placeholder-image';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import axios from 'axios';
+import i18next from 'i18next';
 import { useEffect, useState } from 'react';
 import Ad from '../ad';
 
@@ -50,16 +51,19 @@ interface HeadToHeadType {
         country: string;
         leagueId: number;
         league: string;
+        leagueAr: string;
         staticId: number;
         date: string;
         homeTeam: {
             id: number;
             name: string;
+            nameAr: string;
             score: number;
         };
         awayTeam: {
             id: number;
             name: string;
+            nameAr: string;
             score: number;
         };
     }[];
@@ -121,12 +125,12 @@ export default function HeadToHead({ slug }: HeadToHeadProp) {
                                                     <div className="w-full">
                                                         <div className="mb-2 flex w-full justify-between">
                                                             <p className="text-gray-400">{item.date}</p>
-                                                            <p className="text-gray-400">{item.league}</p>
+                                                            <p className="text-gray-400">{i18next.language == 'en' ? item.league : item.leagueAr}</p>
                                                         </div>
                                                         <div className="flex w-full items-center justify-center gap-x-5">
                                                             <div className="flex flex-1 items-center justify-end gap-x-3">
                                                                 <h3 className="line-clamp-1 text-center text-xs font-semibold whitespace-normal text-black">
-                                                                    {item.homeTeam.name}
+                                                                    {i18next.language == 'en' ? item.homeTeam.name : item.homeTeam.nameAr}
                                                                 </h3>
                                                                 <div className="h-5 w-5 overflow-hidden rounded-full border border-gray-100">
                                                                     <img
@@ -150,7 +154,7 @@ export default function HeadToHead({ slug }: HeadToHeadProp) {
                                                                     />
                                                                 </div>
                                                                 <h3 className="line-clamp-1 text-center text-xs font-semibold whitespace-normal text-black">
-                                                                    {item.awayTeam.name}
+                                                                    {i18next.language == 'en' ? item.awayTeam.name : item.awayTeam.nameAr}
                                                                 </h3>
                                                             </div>
                                                         </div>

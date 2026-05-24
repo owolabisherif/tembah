@@ -24,7 +24,7 @@ export default function VideoNews() {
             tags: '#MohamedSalah #Liverpool #Ballon',
             date: '20-5-2025',
             type: 'recent',
-            videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+            videoUrl: 'http://127.0.0.1:8000/storage/uploads/videos/vxJk3j24nlFkuHWAMyWKNT2WxgL3A9eRVXuthHcF.mp4',
         },
         {
             id: 2,
@@ -35,7 +35,7 @@ export default function VideoNews() {
             tags: '#MohamedSalah #Liverpool #Ballon',
             date: '20-5-2025',
             type: 'top',
-            videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+            videoUrl: 'http://127.0.0.1:8000/storage/uploads/videos/vxJk3j24nlFkuHWAMyWKNT2WxgL3A9eRVXuthHcF.mp4',
         },
         {
             id: 3,
@@ -46,7 +46,7 @@ export default function VideoNews() {
             tags: '#MohamedSalah #Liverpool #Ballon',
             date: '20-5-2025',
             type: 'recent',
-            videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            videoUrl: 'http://127.0.0.1:8000/storage/uploads/videos/vxJk3j24nlFkuHWAMyWKNT2WxgL3A9eRVXuthHcF.mp4',
         },
         {
             id: 4,
@@ -57,7 +57,7 @@ export default function VideoNews() {
             tags: '#MohamedSalah #Liverpool #Ballon',
             date: '20-5-2025',
             type: 'recent',
-            videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+            videoUrl: 'http://127.0.0.1:8000/storage/uploads/videos/vxJk3j24nlFkuHWAMyWKNT2WxgL3A9eRVXuthHcF.mp4',
         },
         {
             id: 5,
@@ -68,7 +68,7 @@ export default function VideoNews() {
             tags: '#MohamedSalah #Liverpool #Ballon',
             date: '20-5-2025',
             type: 'recent',
-            videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+            videoUrl: 'http://127.0.0.1:8000/storage/uploads/videos/vxJk3j24nlFkuHWAMyWKNT2WxgL3A9eRVXuthHcF.mp4',
         },
     ];
 

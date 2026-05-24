@@ -1,3 +1,4 @@
+import { usePlaceholderImage } from '@/hooks/user-placeholder-image';
 import GuestLayout from '@/layouts/guest-layout';
 import { cn } from '@/lib/utils';
 import useLeagueStore from '@/stores/use-league-store';
@@ -6,6 +7,7 @@ import { League } from '@/types/match';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { Deferred, Link, usePage } from '@inertiajs/react';
 import axios from 'axios';
+import i18next, { t } from 'i18next';
 import { ArrowLeftCircleIcon, Loader } from 'lucide-react';
 import { JSX, useEffect, useRef, useState } from 'react';
 import Matches from './partials/show-leagues/matches';
@@ -80,10 +82,6 @@ export default function ShowLeague(props: any) {
             clearInterval(intervalId.current);
         };
     }, [league]);
-
-    useEffect(() => {
-        console.log(refreshTimer);
-    }, [refreshTimer]);
 
     useEffect(() => {
         const tableIndex = types.findIndex((item) => item == 'table');
@@ -218,7 +216,7 @@ export default function ShowLeague(props: any) {
                 <div className="w-fit">
                     <Link href={route('home')} className="flex items-center gap-x-2 rounded-sm px-1.5 py-1 hover:bg-gray-300">
                         <ArrowLeftCircleIcon className="w-8" />
-                        <p className="text-xs font-bold">Home</p>
+                        <p className="text-xs font-bold">{t('Home')}</p>
                     </Link>
                 </div>
                 <div className="mt-2 w-full text-black">
@@ -227,13 +225,17 @@ export default function ShowLeague(props: any) {
                             <div className="h-12 w-12 rounded-full border border-gray-200">
                                 <img
                                     className="h-full w-full rounded-full object-fill"
-                                    src={league?.logo?.split('.')[0] != `${league?.leagueId}` ? league?.logo : placeholderImage}
+                                    src={league?.logo?.split('.')[0] != `${league?.leagueId}` ? league?.logo : usePlaceholderImage()}
                                     alt={league?.name}
                                 />
                             </div>
-                            <div className="flex flex-1 flex-col">
-                                <p className="text-lg leading-4.5 font-semibold capitalize">{league?.name}</p>
-                                <p className="text-sm text-gray-500 capitalize">{league?.country?.name}</p>
+                            <div className="flex flex-1 flex-col gap-y-2">
+                                <h1 className="text-lg leading-4.5 font-semibold capitalize">
+                                    {i18next.language == 'en' ? league?.name : league?.nameAr}
+                                </h1>
+                                <h2 className="text-sm text-gray-500 capitalize">
+                                    {i18next.language == 'en' ? league?.country?.name : league?.country?.name_ar}
+                                </h2>
                             </div>
                         </div>
                         <div>
@@ -250,9 +252,9 @@ export default function ShowLeague(props: any) {
                                     ))}
                                 </select>
                             )}
-                            <button className="cursor-pointer rounded-full bg-red-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900">
+                            {/* <button className="cursor-pointer rounded-full bg-red-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900">
                                 Follow
-                            </button>
+                            </button> */}
                         </div>
                     </div>
 
@@ -269,7 +271,7 @@ export default function ShowLeague(props: any) {
                                             key={item}
                                         >
                                             {/* <Link href={`${route('index.league', { slug: league.slug })}?season=${selectedSeason}`}>{item}</Link> */}
-                                            {item}
+                                            {t(item)}
                                         </Tab>
                                     ))}
                                 </TabList>

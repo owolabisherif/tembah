@@ -30,8 +30,9 @@ export default function useNewsValidator(data: object): {
 
             return images;
         }),
-        video: Joi.optional()
-            .custom((video, helpers) => {
+        video: Joi.when('type', {
+            is: 'video',
+            then: Joi.any().custom((video, helpers) => {
                 let validVideos = [
                     'mp4',
                     'mov',
@@ -65,6 +66,8 @@ export default function useNewsValidator(data: object): {
                     'gifv',
                 ];
 
+                console.log(video);
+
                 const ext = video.name.slice(video.name.lastIndexOf('.') + 1);
 
                 let sizeInMB = (video.size / (1024 * 1024)).toFixed(2);
@@ -72,17 +75,22 @@ export default function useNewsValidator(data: object): {
                 if (!(video instanceof File) || !validVideos.includes(ext)) return helpers.message({ custom: '"video" Upload a valid video' });
 
                 if (+sizeInMB > 50) return helpers.message({ custom: '"video" Max allowed video size is 50MB' });
-            })
-            .allow(''),
+            }),
+            otherwise: Joi.optional(),
+        }),
         meta_title: Joi.string().optional().allow(''),
         meta_title_ar: Joi.string().optional().allow(''),
         meta_desc: Joi.string().optional().allow(''),
         meta_desc_ar: Joi.string().optional().allow(''),
+        keywords: Joi.string().optional().allow(''),
+        keywords_ar: Joi.string().optional().allow(''),
         action: Joi.required(),
         categories: Joi.array().empty(),
         tags: Joi.any(),
         leagues: Joi.any(),
         teams: Joi.any(),
+        players: Joi.any(),
+        countries: Joi.any(),
         status: Joi.required(),
         is_featured: Joi.required(),
         in_top: Joi.required(),

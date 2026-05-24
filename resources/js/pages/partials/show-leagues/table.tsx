@@ -4,6 +4,7 @@ import useLeagueStore from '@/stores/use-league-store';
 import { SharedData } from '@/types';
 import { League } from '@/types/match';
 import { usePage } from '@inertiajs/react';
+import { t } from 'i18next';
 import { PropsWithChildren, useEffect } from 'react';
 import Ad from '../ad';
 
@@ -14,7 +15,6 @@ export default function Table({ ...props }: PropsWithChildren<League>) {
 
     useEffect(() => {
         if (leagueId) {
-            console.log(leagueId);
             initLeague(leagueId);
             getPageData();
         }
@@ -32,7 +32,7 @@ export default function Table({ ...props }: PropsWithChildren<League>) {
             ) : (
                 <>
                     <div className="flex w-full items-center justify-center p-3">
-                        <p className="text-lg font-bold">No standings to show.</p>
+                        <p className="text-lg font-bold">{t('No standings to show.')}</p>
                     </div>
                 </>
             )}

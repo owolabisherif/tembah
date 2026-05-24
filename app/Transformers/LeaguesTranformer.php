@@ -45,6 +45,7 @@ class LeaguesTranformer extends TransformerAbstract
                 "id" => @$league?->country?->id,
                 "name" => @$league?->country?->name,
                 "nameAr" => @$league?->country?->name_ar,
+                "name_ar" => @$league?->country?->name_ar,
             ]
         ];
     }

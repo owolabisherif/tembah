@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { MainTeam } from '@/types/match';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { Deferred } from '@inertiajs/react';
+import i18next, { t } from 'i18next';
 import { ArrowLeftCircleIcon } from 'lucide-react';
 import { JSX, useEffect, useState } from 'react';
 import Ad from '../partials/ad';
@@ -33,7 +34,6 @@ export default function ShowTeam({ slug, team, league }: ShowTeamProp) {
     const typesMaster: TabType[] = ['overview', 'table', 'squad'];
 
     useEffect(() => {
-        console.log(team);
         if (team) {
             setPanels(panelsMaster);
             setTypes(typesMaster);
@@ -74,7 +74,7 @@ export default function ShowTeam({ slug, team, league }: ShowTeamProp) {
                         className="flex cursor-pointer items-center gap-x-2 rounded-sm px-1.5 py-1 hover:bg-gray-300"
                     >
                         <ArrowLeftCircleIcon className="w-8" />
-                        <p className="text-xs font-bold">Back</p>
+                        <p className="text-xs font-bold">{t('Back')}</p>
                     </button>
                 </div>
                 {team ? (
@@ -85,14 +85,14 @@ export default function ShowTeam({ slug, team, league }: ShowTeamProp) {
                                     <img className="h-full w-full rounded-full object-contain" src={team.image ?? usePlaceholderImage()} />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-black">{team.fullname}</p>
-                                    <p className="text-xs text-gray-500 capitalize">{team.country}</p>
+                                    <h1 className="font-bold text-black">{i18next.language == 'en' ? team.fullname : team.fullnameAr}</h1>
+                                    <h2 className="text-xs text-gray-500 capitalize">{i18next.language == 'en' ? team.country : team.countryAr}</h2>
                                 </div>
                             </div>
                             <div>
-                                <button className="cursor-pointer rounded-full bg-red-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900">
-                                    Follow
-                                </button>
+                                {/* <button className="cursor-pointer rounded-full bg-red-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900">
+                                    {t('Follow')}
+                                </button> */}
                             </div>
                         </div>
 
@@ -109,7 +109,7 @@ export default function ShowTeam({ slug, team, league }: ShowTeamProp) {
                                                 key={item}
                                             >
                                                 {/* <Link href={`${route('index.league', { slug: league.slug })}?season=${selectedSeason}`}>{item}</Link> */}
-                                                {item}
+                                                {t(item)}
                                             </Tab>
                                         ))}
                                     </TabList>
@@ -125,7 +125,7 @@ export default function ShowTeam({ slug, team, league }: ShowTeamProp) {
                 ) : (
                     <div className="flex w-full flex-col items-center justify-center">
                         <Ad />
-                        <p className="font-bold">No information avalible for the selected team, please check back later.</p>
+                        <p className="font-bold">{t('No information avalible for the selected team, please check back later.')}</p>
                     </div>
                 )}
             </GuestLayout>

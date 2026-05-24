@@ -33,17 +33,21 @@ type ToFromType = {
     id: string,
     slug: string,
     name: string,
+    nameAr: string,
     image: string | null
 }
 
 interface TransferType  {
     id: string
     name: string
+    nameAr: string
     slug: string
+    number: number
     image: string | null
     position: string
     age: string
     type: string
+    typeAr: string
     price: string
     to: ToFromType
     from: ToFromType
@@ -75,8 +79,10 @@ export interface League  {
 
 type Country = {
     id: number
+    slug: string
+    slug_ar: string
     name: string
-    nameAr: string
+    name_ar: string
 }
 
 export interface AllLeague {
@@ -117,6 +123,7 @@ export interface Standing {
     id: number
     gid?: number
     name: string
+    nameAr: string
     logo: string | null
     position: number
     recentForm: string
@@ -134,12 +141,19 @@ export interface Standing {
 type StatCardPayload = {
     player: {
         id: number;
+        slug: string;
+        slugAr: string;
         name: string;
+        nameAr: string;
         image: string;
+        shirt: number
     };
     team: {
         id: number;
+        slug: string;
+        slugAr: string;
         name: string;
+        nameAr: string;
         logo: string;
     };
     value: number;
@@ -147,6 +161,7 @@ type StatCardPayload = {
 
 export interface StatCardType {
     title: string;
+    leagueId?: number
     payload: StatCardPayload[];
 };
 
@@ -160,9 +175,11 @@ export interface StatResponse {
 
 type FixtureTeam = {
     slug: string
+    slugAr: string
     teamId: number
     logo: string
     name: string
+    nameAr: string
     ftScore?: number
     htScore?: number,
     hasRed?:boolean,
@@ -187,7 +204,7 @@ type FixtureEvent = {
 interface FixtureMatch extends Team {
     id: number
     sort: 0,
-    // slug: string,
+    slug: string,
     staticId: number
     fixId: number
     commentaryId: number
@@ -200,7 +217,9 @@ interface FixtureMatch extends Team {
     time: string
     isLive: boolean,
     venue: string
+    venueAr: string
     venueCity: string
+    venueCityAr: string
     isNext: boolean
     homeTeam: FixtureTeam
     awayTeam: FixtureTeam
@@ -212,6 +231,7 @@ interface FixtureMatch extends Team {
 export interface Fixtures {
     id: number
     league: string
+    leagueAr: string
     leagueData: League
     coutry: string
     date: string
@@ -223,10 +243,13 @@ export interface Fixtures {
 export interface Fixture {
     id: number
     league: string
+    leagueAr: string
     leagueData: League
     coutry: string
     date: string
     sort: number
+    homeTeam: any
+    awayTeam: any
     imageUrl: null | string,
     match: FixtureMatch
 }
@@ -290,6 +313,7 @@ export type LineupPlayer = {
     id: number
     formationPos: string
     name: string
+    nameAr: string
     image: string | null
     slug: string
     number: number
@@ -300,6 +324,7 @@ export type LineupPlayer = {
 export type Player = {
     id: number
     name: string
+    nameAr: string
     number: number
     accCrosses: number
     accuratePasses: number
@@ -510,9 +535,11 @@ interface MatchOverviewTeam {
 export type MainTeamPlayer = {
     id: number
     name: string
+    nameAr: string
     image: string
     slug: string
     nationality: string
+    nationalityAr: string
     height: string
     position: string
     countryFlag: string
@@ -566,6 +593,7 @@ export interface PlayerInformation {
     statistic: {
         leagueId: number,
         league: string
+        leagueAr: string
         season: string
         goals: number
         assist: number
@@ -586,17 +614,20 @@ export interface PlayerInformation {
         from: {
             id: number,
             name: string,
+            nameAr: string,
             image: string,
         },
         to: {
             id: number,
             name: string,
+            nameAr: string,
             image: string,
         }
     }[],
     trophies: {
         count: number,
         league: string
+        leagueAr: string
         seasons: string[]
     }[],
     overallClubStats: {

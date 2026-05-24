@@ -23,6 +23,7 @@ export default function useTagValidator(data: object): {
             })
             .allow(),
         status: Joi.required(),
+        _method: Joi.string(),
         meta_title: Joi.string().optional().allow(''),
         meta_title_ar: Joi.string().optional().allow(''),
         meta_desc: Joi.string().optional().allow(''),

@@ -8,6 +8,7 @@ import useFixtureStore from '@/stores/use-fixtures-store';
 import { SharedData } from '@/types';
 import { Fixtures } from '@/types/match';
 import { Link, usePage, usePoll } from '@inertiajs/react';
+import i18next, { t } from 'i18next';
 import { ArrowLeftCircleIcon, ChevronDownIcon, ChevronUp, ChevronUpIcon, FilterIcon, RotateCwIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Select from 'react-select';
@@ -43,15 +44,15 @@ export default function Match() {
     const periods = useRef([
         {
             value: 'home',
-            label: 'Today',
+            label: t('Today'),
         },
         {
             value: 'd-1',
-            label: 'Yesterday',
+            label: t('Yesterday'),
         },
         {
             value: 'd1',
-            label: 'Tommorrow',
+            label: t('Tomorrow'),
         },
     ]);
 
@@ -71,7 +72,7 @@ export default function Match() {
     useEffect(() => {
         setPeriod(page.period as string);
         if (!fixtures.length) initFixtures();
-        start();
+        // start();
 
         return () => {
             stop();
@@ -84,15 +85,24 @@ export default function Match() {
         getFilteredMatchesByDate(period.value);
     };
 
+    const getTimer = (timer: string) => {
+        if (+timer > 90) {
+            let dif = +timer - 90;
+            return `90+${dif}`;
+        }
+
+        return timer;
+    };
+
     return (
-        <GuestLayout>
+        <GuestLayout title="All Matches">
             <div className="mb-3 w-fit">
                 <Link href={route('home')} className="flex items-center gap-x-2 rounded-sm px-1.5 py-1 hover:bg-gray-300">
                     <ArrowLeftCircleIcon className="w-8" />
-                    <p className="text-xs font-bold">Home</p>
+                    <p className="text-xs font-bold">{t('Home')}</p>
                 </Link>
             </div>
-            <div className="mb-8 flex max-h-[47rem] flex-col items-center gap-y-3 rounded-sm bg-gray-100 p-4 shadow-sm">
+            <div className="mb-8 flex max-h-[47rem] flex-col items-center gap-y-3 rounded-sm bg-gray-100 p-4 shadow-sm dark:bg-neutral-800">
                 <div>
                     <Select
                         openMenuOnClick={false}
@@ -103,7 +113,7 @@ export default function Match() {
                         options={periods.current}
                         classNames={{
                             control: (state) =>
-                                '!rounded-full !focus:ring-0 !active:ring-0 !border-gray-300 !w-64 !focus:outline-none !active:outline-none !focus:border-0',
+                                '!rounded-full !focus:ring-0 !active:ring-0 !border-gray-300 !w-64 !focus:outline-none !active:outline-none !focus:border-0 !dark:bg-neutral-800',
                         }}
                     />
                 </div>
@@ -112,7 +122,7 @@ export default function Match() {
                         <FilterIcon className="w-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Filter by country e.g Qatar"
+                            placeholder={t('Filter by country e.g Qatar')}
                             className="h-full w-full p-1 outline-0 placeholder:text-xs focus:outline-0"
                             value={searchText}
                             onInput={(e) => updateSearchText((e.target as HTMLInputElement).value)}
@@ -131,13 +141,13 @@ export default function Match() {
                     <div className="flex items-center gap-x-2">
                         <button
                             onClick={() => setValue([])}
-                            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-blue-900 hover:bg-blue-800"
+                            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-blue-900 hover:bg-blue-800 dark:bg-neutral-700 dark:hover:bg-neutral-600"
                         >
                             <ChevronUpIcon className="size-5 font-bold text-white" />
                         </button>
                         <button
                             onClick={() => setValue(tabs)}
-                            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-blue-900 hover:bg-blue-800"
+                            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-blue-900 hover:bg-blue-800 dark:bg-neutral-700 dark:hover:bg-neutral-600"
                         >
                             <ChevronDownIcon className="size-5 font-bold text-white" />
                         </button>
@@ -151,13 +161,18 @@ export default function Match() {
                 <Accordion type="multiple" value={value} onValueChange={setValue} className={cn('mt-5 transition-all')}>
                     {fixtures.map((item, index) => (
                         <AccordionItem value={`${index}`} className="mb-5 rounded-sm bg-blue-100 shadow-sm" key={item.league}>
-                            <AccordionHeader className={cn('mb-0 w-full bg-blue-900', value.includes(`${index}`) ? 'rounded-t-md' : 'rounded-md')}>
+                            <AccordionHeader
+                                className={cn(
+                                    'mb-0 w-full bg-blue-900 dark:bg-neutral-800',
+                                    value.includes(`${index}`) ? 'rounded-t-md' : 'rounded-md',
+                                )}
+                            >
                                 <AccordionTrigger className="w-full">
                                     <div className="flex w-full cursor-pointer justify-start rounded-xl p-3 select-none">
                                         <div className="flex w-full justify-between">
                                             {item.leagueData ? (
                                                 <Link href={route('index.league', { slug: item.leagueData.slug })} className="font-bold text-white">
-                                                    {item.league}
+                                                    {i18next.language == 'en' ? item.leagueData.name : item.leagueData.nameAr}
                                                 </Link>
                                             ) : (
                                                 <p className="font-bold text-white">{item.league}</p>
@@ -168,20 +183,20 @@ export default function Match() {
                                     </div>
                                 </AccordionTrigger>
                             </AccordionHeader>
-                            <AccordionContent className="flex flex-col rounded-b-sm py-5 transition-all">
+                            <AccordionContent className="flex flex-col rounded-b-sm py-5 transition-all dark:bg-neutral-700 dark:text-white">
                                 {item.matches.map((game, idx) => (
                                     <Link
                                         href={route('soccer.team.matches', { slug: game.slug })}
-                                        className="flex items-center gap-x-5 px-4 py-3 hover:bg-blue-200"
+                                        className="flex items-center gap-x-5 px-4 py-3 hover:bg-blue-200 dark:hover:bg-neutral-200 dark:hover:text-black"
                                         key={`${game.homeTeam.slug}-vs-${game.awayTeam.slug}-${idx}`}
                                     >
                                         {game.status.toLowerCase() != 'not started' && !statusBlacklist.includes(game.status.toLowerCase()) ? (
                                             <div
                                                 className={cn(
-                                                    'flex h-7 w-7 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white',
+                                                    'flex h-10 w-10 items-center justify-center rounded-full bg-blue-900 text-xs font-bold text-white dark:bg-neutral-800',
                                                 )}
                                             >
-                                                {game.timer != '' ? game.timer : game.status}
+                                                {game.timer != '' ? getTimer(game.timer) : game.status}
                                             </div>
                                         ) : (
                                             <div
@@ -194,10 +209,11 @@ export default function Match() {
                                         )}
 
                                         <div className="flex flex-1 items-center justify-end gap-x-1">
-                                            <h3 className="line-clamp-1 text-center text-xs font-semibold whitespace-normal text-black">
-                                                {game.homeTeam.name}
+                                            <h3 className="line-clamp-1 text-center text-xs font-semibold whitespace-normal">
+                                                {' '}
+                                                {i18next.language == 'en' ? game.homeTeam.name : game.homeTeam.nameAr}
                                             </h3>
-                                            <div className="h-7 w-7 overflow-hidden rounded-full border border-gray-100">
+                                            <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-gray-100 dark:border-neutral-100">
                                                 <img
                                                     src={game.homeTeam.logo ?? usePlaceholderImage()}
                                                     alt={game.homeTeam.name}
@@ -208,14 +224,11 @@ export default function Match() {
                                         <div
                                             className={cn(
                                                 'relative flex w-24 items-center justify-center rounded-sm',
-                                                game.isLive ? 'animate-pulse bg-green-300' : 'bg-gray-300',
+                                                game.isLive ? 'animate-pulse bg-green-300 dark:bg-neutral-600 dark:text-white' : 'bg-gray-300',
                                             )}
                                         >
-                                            {statusTemp.includes(game.status.toLowerCase()) ? (
-                                                <SoccerCard homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
-                                            ) : (
-                                                ''
-                                            )}
+                                            <SoccerCard homeTeam={game.homeTeam} awayTeam={game.awayTeam} />
+
                                             {statusTemp.includes(game.status.toLowerCase()) ? (
                                                 <div className="flex flex-col items-center justify-center gap-y-2">
                                                     <div className="flex gap-x-1 p-1">
@@ -244,7 +257,7 @@ export default function Match() {
                                             )}
                                         </div>
                                         <div className="flex w-full flex-1 items-center justify-start gap-x-1">
-                                            <div className="h-7 w-7 overflow-hidden rounded-full border border-gray-100">
+                                            <div className="h-7 w-7 shrink-0 overflow-hidden rounded-full border border-gray-100 dark:border-neutral-100">
                                                 <img
                                                     src={game.awayTeam.logo ?? usePlaceholderImage()}
                                                     alt={game.awayTeam.name}
@@ -252,8 +265,8 @@ export default function Match() {
                                                 />
                                             </div>
 
-                                            <h3 className="line-clamp-1 text-center text-xs font-semibold whitespace-normal text-black">
-                                                {game.awayTeam.name}
+                                            <h3 className="line-clamp-1 text-center text-xs font-semibold whitespace-normal">
+                                                {i18next.language == 'en' ? game.awayTeam.name : game.awayTeam.nameAr}
                                             </h3>
                                         </div>
                                     </Link>

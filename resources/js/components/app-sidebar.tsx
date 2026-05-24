@@ -25,11 +25,14 @@ import {
     LayoutGrid,
     ListCollapseIcon,
     ListPlusIcon,
-    LucideInspect,
-    MoveRightIcon,
+    MailIcon,
+    MailPlusIcon,
     NewspaperIcon,
     PlusIcon,
+    RssIcon,
+    ServerCogIcon,
     ShirtIcon,
+    SportShoeIcon,
     TagsIcon,
     TrendingUpIcon,
     TrophyIcon,
@@ -150,29 +153,29 @@ const mainNavItems: NavItem[] = [
                 href: route('news.stats'),
                 icon: TrendingUpIcon,
             },
-            {
-                title: 'Transfer',
-                href: route('news.transfer.index'),
-                icon: MoveRightIcon,
-                isDropdown: true,
-                children: [
-                    {
-                        title: 'List',
-                        href: route('news.transfer.index'),
-                        icon: NewspaperIcon,
-                    },
-                    {
-                        title: 'Create',
-                        href: route('news.transfer.create'),
-                        icon: PlusIcon,
-                    },
-                    {
-                        title: 'Stats',
-                        href: route('news.transfer.stats'),
-                        icon: TrendingUpIcon,
-                    },
-                ],
-            },
+            // {
+            //     title: 'Transfer',
+            //     href: route('news.transfer.index'),
+            //     icon: MoveRightIcon,
+            //     isDropdown: true,
+            //     children: [
+            //         {
+            //             title: 'List',
+            //             href: route('news.transfer.index'),
+            //             icon: NewspaperIcon,
+            //         },
+            //         {
+            //             title: 'Create',
+            //             href: route('news.transfer.create'),
+            //             icon: PlusIcon,
+            //         },
+            //         {
+            //             title: 'Stats',
+            //             href: route('news.transfer.stats'),
+            //             icon: TrendingUpIcon,
+            //         },
+            //     ],
+            // },
         ],
     },
     {
@@ -191,33 +194,88 @@ const mainNavItems: NavItem[] = [
                 href: route('article.create'),
                 icon: PlusIcon,
             },
+            {
+                title: 'Stats',
+                href: route('article.stats'),
+                icon: TrendingUpIcon,
+            },
         ],
     },
     {
-        title: 'Countries',
-        href: route('country.index'),
-        icon: Globe2Icon,
+        title: 'Pages',
+        href: route('seo.page.index'),
+        icon: BookOpen,
+        isDropdown: false,
     },
     {
-        title: 'Leagues',
-        href: route('league.index'),
-        icon: TrophyIcon,
+        title: 'API',
+        href: '#',
+        icon: ServerCogIcon,
+        isDropdown: true,
+        children: [
+            {
+                title: 'Countries',
+                href: route('country.index'),
+                icon: Globe2Icon,
+            },
+            {
+                title: 'Leagues',
+                href: route('league.index'),
+                icon: TrophyIcon,
+            },
+            {
+                title: 'Teams',
+                href: route('team.index'),
+                icon: ShirtIcon,
+            },
+            {
+                title: 'Players',
+                href: route('player.index'),
+                icon: UserCheck2,
+            },
+            {
+                title: 'Fixtures',
+                href: route('fixtures.index'),
+                icon: SportShoeIcon,
+            },
+        ],
     },
     {
-        title: 'Teams',
-        href: route('team.index'),
-        icon: ShirtIcon,
+        title: 'Newsletter',
+        href: route('newsletter.index'),
+        icon: RssIcon,
+        isDropdown: true,
+        children: [
+            {
+                title: 'Subscribers',
+                href: route('newsletter.index'),
+                icon: RssIcon,
+            },
+            {
+                title: 'Mails',
+                href: route('league.index'),
+                icon: MailIcon,
+                isDropdown: true,
+                children: [
+                    {
+                        title: 'List',
+                        href: route('newsletter.index'),
+                        icon: MailIcon,
+                    },
+                    {
+                        title: 'Create',
+                        href: route('newsletter.index'),
+                        icon: MailPlusIcon,
+                    },
+                ],
+            },
+        ],
     },
-    {
-        title: 'Players',
-        href: route('player.index'),
-        icon: UserCheck2,
-    },
-    {
-        title: 'OAuths',
-        href: route('oauth.index'),
-        icon: LucideInspect,
-    },
+    // {
+    //     title: 'OAuths',
+    //     href: route('oauth.index'),
+    //     icon: LucideInspect,
+    // },
 ];
 
 const footerNavItems: NavItem[] = [

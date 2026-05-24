@@ -2,8 +2,10 @@ import { cn } from "@/lib/utils"
 import { XCircleIcon } from "lucide-react"
 import { PropsWithChildren } from "react"
 
+export type MessageType = "success" | "error" | "info"
+
 type MessageBoxProp = {
-    type: "success" | "error" | "info"
+    type: MessageType
     title?: string| null
     className?: string 
     close?: () => void

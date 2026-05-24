@@ -35,6 +35,7 @@ class TopLeaguesTranformer extends TransformerAbstract
         return [
             "id" => $league->id,
             "leagueId" => $league->league_id,
+            "country" => $league->country,
             "slug" => $league->slug,
             "slugAr" => $league->slug_ar,
             "name" => $league->name,

@@ -1,16 +1,20 @@
 import { Accordion, AccordionContent, AccordionHeader, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { usePlaceholderImage } from '@/hooks/user-placeholder-image';
 import { cn } from '@/lib/utils';
 import { AllLeague } from '@/types/match';
 import { Link } from '@inertiajs/react';
 import axios from 'axios';
+import i18next, { t } from 'i18next';
 import { ChevronUp, FilterIcon, RotateCwIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import TopLeaguesStanding from './top-leagues-standing';
 
 export default function AllLeagues() {
     const [value, setValue] = useState('0');
     const [visibleCountry, setVisibleCountry] = useState(0);
     const [allLeagues, setAllLeagues] = useState<AllLeague[]>([]);
     const [searchText, updateSearchText] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         getAllLeagues();
@@ -39,9 +43,16 @@ export default function AllLeagues() {
     }, [searchText, allLeagues]);
 
     const getAllLeagues = async () => {
-        const res = await axios.get(route('all.leagues'));
+        try {
+            setLoading(true);
 
-        setAllLeagues(res.data);
+            const res = await axios.get(route('all.leagues'));
+            setAllLeagues(res.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleShowLeagues = (country: number) => {
@@ -52,55 +63,53 @@ export default function AllLeagues() {
         }
     };
 
-    const placeholderImage = '/assets/images/logo2.png';
-
     return (
         <div className="h-full rounded-sm">
-            <div className="flex h-full flex-col">
-                <Accordion
-                    type="single"
-                    defaultValue="0"
-                    collapsible
-                    value={value}
-                    onValueChange={setValue}
-                    className={cn('rounded-sm bg-gray-100 shadow-sm transition-all', value == '0' ? 'h-fit' : '')}
-                >
-                    <AccordionItem value={`0`} className="">
-                        <AccordionHeader className="mb-0 w-full">
-                            <AccordionTrigger className="w-full">
-                                <div className="flex w-full cursor-pointer justify-start rounded-xl p-3 select-none">
-                                    <div className="flex w-full justify-between">
-                                        <p className="font-bold text-black">All leagues</p>
-                                        <ChevronUp className={cn('text-black transition-all', value == `0` ? '-rotate-180' : '')} />
+            <div className="flex h-full flex-col gap-y-2">
+                {filteredAllLeagues.length && !loading ? (
+                    <Accordion
+                        type="single"
+                        defaultValue="0"
+                        collapsible
+                        value={value}
+                        onValueChange={setValue}
+                        className={cn('rounded-sm bg-gray-100 shadow-sm transition-all dark:bg-neutral-800', value == '0' ? 'h-fit' : '')}
+                    >
+                        <AccordionItem value={`0`} className="">
+                            <AccordionHeader className="mb-0 w-full">
+                                <AccordionTrigger className="w-full">
+                                    <div className="flex w-full cursor-pointer justify-start rounded-xl p-3 select-none">
+                                        <div className="flex w-full justify-between">
+                                            <p className="font-bold text-black dark:text-white">{t('All Competitons')}</p>
+                                            <ChevronUp className={cn('text-black transition-all', value == `0` ? '-rotate-180' : '')} />
+                                        </div>
                                     </div>
-                                </div>
-                            </AccordionTrigger>
-                        </AccordionHeader>
-                        <AccordionContent className="flex flex-col rounded-b-sm p-5 transition-all">
-                            <div className="!flex max-h-[47rem] flex-1 flex-col">
-                                <div className="flex items-center justify-center rounded border border-gray-300 pl-1">
-                                    <FilterIcon className="w-4 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Filter by country e.g Qatar"
-                                        className="h-full w-full p-1 outline-0 placeholder:text-xs focus:outline-0"
-                                        value={searchText}
-                                        onInput={(e) => updateSearchText((e.target as HTMLInputElement).value)}
-                                    />
-                                    <button
-                                        onClick={() => updateSearchText('')}
-                                        className={cn(
-                                            'cursor-pointer pr-1 transition-all delay-75 hover:text-blue-950',
-                                            searchText.length ? 'animate-fadein opacity-100' : 'animate-fadeout opacity-0',
-                                        )}
-                                        title="Clear search text"
-                                    >
-                                        <RotateCwIcon className="w-4" />
-                                    </button>
-                                </div>
-                                <div className="scrollbar mt-5 h-full w-full flex-1 overflow-y-scroll">
-                                    {filteredAllLeagues.length ? (
-                                        filteredAllLeagues.map((country) => (
+                                </AccordionTrigger>
+                            </AccordionHeader>
+                            <AccordionContent className="flex flex-col rounded-b-sm p-5 transition-all">
+                                <div className="!flex flex-1 flex-col md:max-h-[47rem]">
+                                    <div className="flex items-center justify-center rounded border border-gray-300 pl-1">
+                                        <FilterIcon className="w-4 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            placeholder={t('Filter by country e.g Qatar')}
+                                            className="h-full w-full p-1 outline-0 placeholder:text-xs focus:outline-0"
+                                            value={searchText}
+                                            onInput={(e) => updateSearchText((e.target as HTMLInputElement).value)}
+                                        />
+                                        <button
+                                            onClick={() => updateSearchText('')}
+                                            className={cn(
+                                                'cursor-pointer pr-1 transition-all delay-75 hover:text-blue-950',
+                                                searchText.length ? 'animate-fadein opacity-100' : 'animate-fadeout opacity-0',
+                                            )}
+                                            title="Clear search text"
+                                        >
+                                            <RotateCwIcon className="w-4" />
+                                        </button>
+                                    </div>
+                                    <div className="scrollbar mt-5 h-full w-full flex-1 overflow-y-scroll">
+                                        {filteredAllLeagues.map((country) => (
                                             <div
                                                 className="flex cursor-pointer flex-col rounded-sm p-2 transition-all select-none hover:bg-gray-300"
                                                 key={country.id}
@@ -111,11 +120,13 @@ export default function AllLeagues() {
                                                         <div className="h-6 w-6 rounded-full border border-gray-200">
                                                             <img
                                                                 className="h-full w-full rounded-full object-fill"
-                                                                src={country.logo.split('.')[0] != `${country.id}` ? country.logo : placeholderImage}
+                                                                src={country.logo ? country.logo : usePlaceholderImage()}
                                                                 alt={country.name}
                                                             />
                                                         </div>
-                                                        <p className="flex-1 text-sm font-semibold capitalize select-none">{country.name}</p>
+                                                        <p className="flex-1 text-sm font-semibold capitalize select-none">
+                                                            {i18next.language == 'en' ? country.name : country.nameAr}
+                                                        </p>
                                                     </div>
                                                     <ChevronUp
                                                         className={cn(
@@ -141,29 +152,32 @@ export default function AllLeagues() {
                                                                             src={
                                                                                 league.logo.split('.')[0] != `${league.leagueId}`
                                                                                     ? league.logo
-                                                                                    : placeholderImage
+                                                                                    : usePlaceholderImage()
                                                                             }
                                                                             alt={league.name}
                                                                         />
                                                                     </div>
-                                                                    <p className="flex-1">{league.name}</p>
+                                                                    <p className="flex-1">{i18next.language == 'en' ? league.name : league.nameAr}</p>
                                                                 </Link>
                                                             </li>
                                                         ))}
                                                     </ul>
                                                 )}
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="flex items-center justify-center">
-                                            <p className="text-md font-bold text-gray-400">No result</p>
-                                        </div>
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                ) : loading ? (
+                    <div className="max-h-[47rem] w-full flex-1 animate-pulse rounded-sm bg-gray-200"></div>
+                ) : (
+                    <></>
+                )}
+                <div className="hidden h-full max-h-[47rem] w-full overflow-y-auto rounded-sm shadow-md md:block">
+                    <TopLeaguesStanding />
+                </div>
             </div>
         </div>
     );

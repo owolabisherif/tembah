@@ -13,10 +13,10 @@ type Breakpoint = {
 };
 
 type SwiperProp = {
-    spaceBetween: number;
-    slidesPerView: number;
-    loop: boolean;
-    showProgress: boolean;
+    spaceBetween?: number;
+    slidesPerView?: number;
+    loop?: boolean;
+    showProgress?: boolean;
     breakpoints?: Breakpoint;
     classData?: string;
     delay?: number;
@@ -50,9 +50,12 @@ export default function SwiperCarousel(props: any) {
                 dir="rtl"
                 spaceBetween={props.spaceBetween}
                 slidesPerView={props.slidesPerView}
+                slidesPerGroup={1}
                 centeredSlides={false}
                 breakpoints={props.breakpoints}
                 loop={props.loop}
+                observer={true}
+                observeParents={true}
                 autoplay={{
                     delay: props.delay ?? 2500,
                     disableOnInteraction: false,

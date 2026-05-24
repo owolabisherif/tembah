@@ -39,7 +39,7 @@ class AllLeaguesTransformer extends TransformerAbstract
             "name" => $country->name,
             "nameAr" => $country->name_ar,
             "sort" => $country->sort,
-            "logo" => $country->logo,
+            "logo" => @$country->image ? $country->image->name : getCountryFlag($country->name),
             "leagues" => $country->leagues->map(fn($lg) => [
                 "id" => $lg->id,
                 "leagueId" => $lg->league_id,

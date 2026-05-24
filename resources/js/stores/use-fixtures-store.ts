@@ -4,6 +4,7 @@ import { FixtureMatch, Fixtures, MatchCardProp, Standing, StatResponse, Transfer
 import { isDate, isToday, isTomorrow, isYesterday, format } from "date-fns";
 import axios from "axios"
 import {create} from "zustand"
+import i18next from "i18next";
 
 interface LeagueFixture {
    fixtures: Fixtures[],
@@ -37,7 +38,7 @@ const useFixtureStore = create<LeagueFixture>()((set, get) => ({
                 for await (const fixture of fixtureList) {
                     leagues.push({
                         value: fixture.id,
-                        label: fixture.league,
+                        label: getTranslation(fixture),
                         imageUrl: fixture.imageUrl ?? usePlaceholderImage()
                     })
 
@@ -69,7 +70,7 @@ const useFixtureStore = create<LeagueFixture>()((set, get) => ({
                 for await (const fixture of fixtureList) {
                     leagues.push({
                         value: fixture.id,
-                        label: fixture.league,
+                        label: getTranslation(fixture),
                         imageUrl: fixture.imageUrl ?? usePlaceholderImage()
                     })
     
@@ -109,7 +110,7 @@ const useFixtureStore = create<LeagueFixture>()((set, get) => ({
             for await (const fixture of fixtureList) {
                 leagues.push({
                     value: fixture.id,
-                    label: fixture.league,
+                    label: getTranslation(fixture),
                     imageUrl: fixture.imageUrl ?? usePlaceholderImage()
                 })
 
@@ -148,6 +149,12 @@ const useFixtureStore = create<LeagueFixture>()((set, get) => ({
     }
 }))
 
+const getTranslation = (fixture: Fixtures) => {
+    
+    if(fixture.leagueData) return i18next.language == 'en' ? fixture.leagueData.name : fixture.leagueData.nameAr
+
+    return i18next.language == 'en' ? fixture.league : fixture.leagueAr
+}
 
 const handleFixtures = async (key: any | null ): Promise<Fixtures[]> => {
     try {

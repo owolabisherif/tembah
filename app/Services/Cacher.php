@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Override;
 
 class Cacher extends Cache
 {
@@ -44,5 +45,12 @@ class Cacher extends Cache
         self::forget($key);
 
         return self::remember($key, $ttl, $callback);
+    }
+
+    public static function refreshRememberForever(string $key, \Closure $callback)
+    {
+        self::forget($key);
+
+        return self::rememberForever($key, $callback);
     }
 }

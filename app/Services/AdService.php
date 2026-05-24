@@ -35,11 +35,13 @@ class AdService
             $startDate = Carbon::parse($request->starts_at)->setTimezone('Asia/Qatar')->format("Y-m-d H:i:s");
             $endDate = Carbon::parse($request->ends_at)->setTimezone('Asia/Qatar')->format("Y-m-d H:i:s");
 
+            $status = $request->status == 'true' ? true : false;
+
             $data = [
                 "title" => $request->title,
                 "type" => $request->type,
                 "priority" => $request->priority,
-                "status" => (bool) $request->status,
+                "status" => $status,
                 "url" => $request->url,
                 "starts_at" => $startDate,
                 "ends_at" => $endDate,
@@ -51,11 +53,12 @@ class AdService
             if ($request->isMethod("PUT")) DropImageAction::handle($ad, Ad::class, $imagePath);
 
             $path = $request->images[0]->store($imagePath, "public");
-            $url = url("/") . "/storage" . "/$path";
             $imagePaths[] = $path;
+            $imageArray = explode("/", $path);
+            $name = array_pop($imageArray);
 
             $ad->image()->updateOrCreate(["imageable_id" => $ad->id], [
-                "url" => $url, 
+                "name" => $name, 
             ]);
 
             if ($request->meta_title != "" && $request->meta_title_ar != "") {

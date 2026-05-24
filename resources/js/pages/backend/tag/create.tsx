@@ -3,14 +3,18 @@ import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import TagForm from './components/tag-form';
 
-export default function Index() {
+export type TagPropType = {
+    tag?: any;
+};
+
+export default function Index({ tag }: TagPropType) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Tag',
-            href: '#',
+            href: route('tag.index'),
         },
         {
-            title: 'Create',
+            title: tag ? `Update ${tag.title}` : 'Create',
             href: route('tag.create'),
         },
     ];
@@ -19,7 +23,7 @@ export default function Index() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create tag" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <TagForm />
+                <TagForm tag={tag} />
             </div>
         </AppLayout>
     );

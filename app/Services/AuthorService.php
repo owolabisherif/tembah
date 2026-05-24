@@ -45,17 +45,19 @@ class AuthorService
 
             $author = Author::updateOrCreate(["id" => $request->id], $data);
 
-            if(count($request->images) > 0) {
+
+            if($request->images && count($request->images) > 0) {
 
                 if ($request->isMethod("PUT")) DropImageAction::handle($author, Author::class, $imagePath);
-    
-    
+
+
                 $path = $request->images[0]->store($imagePath, "public");
-                $url = url("/") . "/storage" . "/$path";
-                $imagePaths[] = $path;    
+                $imagePaths[] = $path;
+                $imageArray = explode("/", $path);
+                $name = array_pop($imageArray);
     
                 $author->image()->updateOrCreate(["imageable_id" => $author->id],[
-                    "url" => $url,
+                    "name" => $name,
                 ]);
             }
 

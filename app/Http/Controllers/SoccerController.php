@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\GameCalenderGeneratorAction;
 use App\Actions\GetGamesAction;
 use Exception;
 use Illuminate\Http\Request;
@@ -35,39 +36,54 @@ class SoccerController extends Controller
 
     public function  __construct()
     {
-        $this->key =  env("GOAL_SERVE_KEY");
-        $this->endPoint = env("GOAL_SERVE_ENDPOINT");
+        $this->key =  config('api.key');
+        $this->endPoint = config('api.endpoint');
     }
 
     public function games($period = "home")
     {
+        ini_set('max_execution_time', 0);
+        Log::info( $period);
+        $now = Carbon::now()->format("Y-m-d");
+        $yesterday = Carbon::now()->subDay()->format("Y-m-d");
+        $tomorrow = Carbon::now()->addDay()->format("Y-m-d");
+
         try {
             //home - today, d1 - tommorrow, d-1 - yesterday
-            $sortString = collect(["home", "d1", "d-1"]);
+            $past = [];
 
-            if(!$sortString->contains($period)) {
-        
-                return response()->json([]);
+            for ($i=1; $i < 8; $i++) { 
+                $past[] = "d-$i";
             }
 
-            if($period == 'd-1') {
-                $yesterday = Carbon::now()->subDay()->format("Y-m-d");
-    
-                $fixtures = HistoricalFixture::where(['date' => $yesterday])->first();
-                
-                if($fixtures ) {
+            $mods = [
+                "home" => $now,
+                "d-1" => $yesterday,
+                "d1" => $tomorrow,
+            ];
+
+            $periods = GameCalenderGeneratorAction::handle();
+            $filter = collect($periods)->first(fn($item) => $item["value"] == $period);
+
+            if(in_array($period, $past)) {
+                $fixtures = HistoricalFixture::where(['date' => @$mods[$period] ?? $filter["label"]])->first();
+
+                if ($fixtures) {
                     $games = @$fixtures->data;
                     return response()->json(GameTransformer::make($games)->get());
                 }
             }
 
-            $now = Carbon::now()->format("Y-m-d");
-            $tommorrow = Carbon::now()->addDay()->format("Y-m-d");
-            $isToday = $period == 'home';
+            // if(!$filter) return response()->json([]);
+            
+            // $fixtures = HistoricalFixture::where(['date' => @$mods[$filter["label"]] ?? $filter["label"]])->first();
 
-            $games = Cacher::rememberIf($isToday, "soccer-today-$now", Carbon::now()->addSeconds(60), function() use($period) {
+            
+            $games = Cache::remember("soccer-today-{$filter['label']}", Carbon::now()->addSeconds(60), function() use($period) {
                 return GetGamesAction::make($period)->handle();
             });
+
+            Log::info($games);
 
             if ($games instanceof stdClass) {
                 $games = [$games];
@@ -76,19 +92,9 @@ class SoccerController extends Controller
             
             $liveOutput = response()->json(GameTransformer::make($games)->get());
             
-            if(empty($liveOutput)) {
-                $fixtures = HistoricalFixture::where(['date' => $isToday ? $now : $tommorrow])->first();
-
-                if ($fixtures) {
-                    $games = @$fixtures->data;
-                    return response()->json(GameTransformer::make($games)->get());
-                }
-            }
-            
             if(!empty($liveOutput)) {
-
-                $fixtures =  HistoricalFixture::where(['date' =>  $isToday ? $now : $tommorrow])?->first() ?? new HistoricalFixture();
-                $fixtures->date = $isToday ? $now : $tommorrow;
+                $fixtures =  HistoricalFixture::where(['date' =>  @$mods[$period] ?? $filter["label"]])?->first() ?? new HistoricalFixture();
+                $fixtures->date = @$mods[$period] ?? $filter["label"];
                 $fixtures->data = $games;
     
                 $fixtures->save();
@@ -97,9 +103,18 @@ class SoccerController extends Controller
             return $liveOutput;
             
         } catch (\Exception $e) {
-            return response()->json([]);
-
             Log::error($e);
+
+            if (empty($liveOutput)) {
+                $fixtures = HistoricalFixture::where(['date' => $now ])->first();
+
+                if ($fixtures) {
+                    $games = @$fixtures->data;
+                    return response()->json(GameTransformer::make($games)->get());
+                }
+            }
+
+            return response()->json([]);
         }
     }
 
@@ -160,23 +175,27 @@ class SoccerController extends Controller
 
     public function getLeagueFixtures($leagueId = '1204', $start_date = '', $end_date = '')
     {
-        try {
-         
+        try {            
+            Cache::forget("league_fixtures_$leagueId");
             $response = Cache::remember("league_fixtures_$leagueId", now()->addHours(2), function () use ($leagueId, $start_date, $end_date) {
                 $q = $start_date != '' & $end_date != '' ? "date_start=$start_date&date_end=$end_date" : '';
     
                 $response = Http::get("{$this->endPoint}/{$this->key}/soccerfixtures/league/$leagueId?json=1&$q")->throw();
-
+    
                 $collection = $response->collect()->toArray();
-                $inst = new LeagueFixtureCustomTransformer(@$collection["results"]["tournament"]["@season"]);
+    
+    
+                $inst = new LeagueFixtureCustomTransformer(@$collection["results"]["tournament"]["@season"], $leagueId);
     
                 return $inst->getFixtures($collection)->result();
             });
 
             return response()->json($response);
         } catch(RequestException $e) {
+            Log::error($e);
             return response()->json(["message" => $e->getMessage(), "status" => false], $e->response->status());
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json(["error" => $e->getMessage(), "status" => false], 500);
         }
     }

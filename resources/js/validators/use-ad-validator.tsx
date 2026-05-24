@@ -22,6 +22,7 @@ export default function useAdValidator(data: object): {
             })
             .allow(),
         url: Joi.string().uri().allow(''),
+        _method: Joi.string(),
         starts_at: Joi.date(),
         ends_at: Joi.date(),
         priority: Joi.number().required().min(0),

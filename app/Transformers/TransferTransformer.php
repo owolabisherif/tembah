@@ -2,6 +2,7 @@
 
 namespace App\Transformers;
 
+use App\Models\Player;
 use App\Models\Team;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -37,24 +38,30 @@ class TransferTransformer
 
             $sort = Carbon::parse(@$transfer['@date'] . " " . @$transfer["@time"])->setTimezone($userTz)->timestamp;
 
+            $player = Player::wherePlayerId(@$transfer["@id"])->first();
+
             $transfers[] = [
                 "id" => (int) @$transfer["@id"],
                 "name" => @$transfer["@name"],
+                "nameAr" => getArabic(@$transfer["@name"]),
                 "slug" => Str::slug(@$transfer["@name"]),
-                "image" => "",
+                "image" => @$player->image ?? null,
                 "age" => @$transfer["@age"],
                 "position" => @$transfer["@position"],
                 "type" => @$transfer["@type"],
+                "typeAr" => getArabic(@$transfer["@type"]),
                 "price" => @$transfer["@price"],
                 "from" => [
                     "id" => (int) @$transfer["@from_id"],
                     "name" => @$transfer["@from"],
+                    "nameAr" => getArabic(@$transfer["@from"]),
                     "slug" => Str::slug(@$transfer["@from"]),
                     "image" => $fromTeam ? $fromTeam["image"] : ""
                 ],
                 "to" => [
                     "id" => (int) @$transfer["@to_id"],
                     "name" => @$transfer["@to"],
+                    "nameAr" => getArabic(@$transfer["@to"]),
                     "slug" => Str::slug(@$transfer["@to"]),
                     "image" => $toTeam ? $toTeam["image"] : ""
                 ],

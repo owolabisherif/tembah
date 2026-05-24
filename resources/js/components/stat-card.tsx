@@ -2,19 +2,13 @@ import { usePlaceholderImage } from '@/hooks/user-placeholder-image';
 import { cn } from '@/lib/utils';
 import { StatCardType } from '@/types/match';
 import { Link } from '@inertiajs/react';
-import { ChevronRight } from 'lucide-react';
+import i18next from 'i18next';
 import { Badge } from './ui/badge';
 
-export default function StatCard({ title, payload }: StatCardType) {
+export default function StatCard({ title, payload, leagueId }: StatCardType) {
     return (
         <div className="rounded-sm p-3 shadow-sm">
-            <Link className="mb-5 flex justify-between hover:text-blue-950" href="#">
-                <h2 className="text-lg font-bold">{title}</h2>
-                <div className="flex items-center">
-                    <p className="text-xs font-bold">See All</p>
-                    <ChevronRight className="size-4 font-bold" />
-                </div>
-            </Link>
+            <h2 className="text-lg font-bold">{title}</h2>
             <div>
                 {payload.length &&
                     payload.map((item, index) => (
@@ -26,11 +20,25 @@ export default function StatCard({ title, payload }: StatCardType) {
                             key={item.player.name}
                         >
                             <div className="flex items-center justify-center">
-                                <div className="mr-2 h-10 w-10 overflow-hidden rounded-full border border-gray-400">
+                                <div
+                                    className={cn(
+                                        'h-10 w-10 overflow-hidden rounded-full border border-gray-400',
+                                        i18next.language == 'en' ? 'mr-2' : 'ml-2',
+                                    )}
+                                >
                                     <img src={item.player.image ?? usePlaceholderImage()} alt={item.player.name} className="h-full w-full" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-bold">{item.player.name}</h3>
+                                    <Link
+                                        href={route('show.player', {
+                                            slug: item.player.slug,
+                                            shirt: item.player.shirt,
+                                            player: item.player.id,
+                                        })}
+                                        className="mb-1 hover:underline"
+                                    >
+                                        <h3 className="text-sm font-bold">{i18next.language == 'en' ? item.player.name : item.player.nameAr}</h3>
+                                    </Link>
                                     <div className="flex items-center">
                                         <div className="mr-2 h-4 w-4 overflow-hidden rounded-full border border-gray-300">
                                             <img
@@ -39,7 +47,15 @@ export default function StatCard({ title, payload }: StatCardType) {
                                                 className="h-full w-full object-cover object-center"
                                             />
                                         </div>
-                                        <h3 className="text-xs text-gray-400">{item.team.name}</h3>
+                                        <Link
+                                            href={route('soccer.show.team.index', {
+                                                slug: item.team.slug,
+                                                ids: leagueId ? `${item.team.id}-${leagueId}` : item.team.id,
+                                            })}
+                                            className="hover:underline"
+                                        >
+                                            <h3 className="text-xs text-gray-400">{i18next.language == 'en' ? item.team.name : item.team.nameAr}</h3>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

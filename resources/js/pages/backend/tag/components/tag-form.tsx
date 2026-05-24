@@ -4,17 +4,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import MessageBox from '@/components/ui/message-box';
 import { Select as RadSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useUrlToImageConverter from '@/hooks/use-url-to-image-converter';
 import { cn } from '@/lib/utils';
 import useTagValidator from '@/validators/use-tag-validator';
+import { router } from '@inertiajs/react';
 import axios from 'axios';
 import { LoaderCircleIcon } from 'lucide-react';
-import { ChangeEvent, FormEvent, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
+import { TagPropType } from '../create';
 
 type TagFormType = {
     id: number | null;
     title: string;
     titleAr: string;
     status: boolean;
+    _method: string;
     images: any[];
     meta_title: string | null;
     meta_title_ar: string | null;
@@ -22,9 +26,10 @@ type TagFormType = {
     meta_desc_ar: string | null;
 };
 
-export default function TagForm() {
+export default function TagForm({ tag }: TagPropType) {
     const dropZone = useRef<any>(null);
     const [processing, setProcessing] = useState<boolean>(false);
+    const [editing, setEditing] = useState<boolean>(false);
     const [message, setMessage] = useState<string[]>([]);
     const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('error');
     const [form, setForm] = useState<TagFormType>({
@@ -32,6 +37,7 @@ export default function TagForm() {
         title: '',
         titleAr: '',
         images: [],
+        _method: 'post',
         status: true,
         meta_title: '',
         meta_title_ar: '',
@@ -50,6 +56,7 @@ export default function TagForm() {
             titleAr: '',
             status: true,
             meta_title: '',
+            _method: 'post',
             meta_title_ar: '',
             meta_desc: '',
             meta_desc_ar: '',
@@ -61,6 +68,32 @@ export default function TagForm() {
             left: 0,
             behavior: 'smooth',
         });
+    };
+
+    useEffect(() => {
+        if (tag) handleEdit();
+    }, [tag]);
+
+    const handleEdit = async () => {
+        setEditing(true);
+
+        let image = tag.image ? await useUrlToImageConverter(tag.image.name) : null;
+
+        setForm((values) => ({
+            ...values,
+            id: tag.id,
+            title: tag.title,
+            titleAr: tag.title_ar,
+            status: Boolean(tag.status) ? true : false,
+            meta_title: tag.seo ? tag.seo.meta_title : '',
+            meta_title_ar: tag.seo ? tag.seo.meta_title_ar : '',
+            meta_desc: tag.seo ? tag.seo.meta_desc : '',
+            meta_desc_ar: tag.seo ? tag.seo.meta_desc_ar : '',
+            images: image ? [image] : [],
+            _method: 'put',
+        }));
+
+        if (image) dropZone.current.getPreview(image);
     };
 
     const updateImage = (index: number, file: File) => {
@@ -112,7 +145,11 @@ export default function TagForm() {
             setMessageType('success');
             setMessage((err) => [res.data.message]);
 
-            resetForm();
+            if (editing) {
+                router.get(route('tag.index'));
+            } else {
+                resetForm();
+            }
         } catch (error) {
             setMessageType('error');
             setMessage((err) => [...err, (error as any).response.data.message]);
@@ -163,7 +200,7 @@ export default function TagForm() {
                             <div className="col-span-12 mt-10">
                                 <div className="flex w-full justify-end">
                                     <Button className="cursor-pointer" disabled={processing}>
-                                        {processing && <LoaderCircleIcon className="size-5 animate-spin" />} SUBMIT
+                                        {processing && <LoaderCircleIcon className="size-5 animate-spin" />} {editing ? 'UPDATE' : 'SUBMIT'}
                                     </Button>
                                 </div>
                             </div>

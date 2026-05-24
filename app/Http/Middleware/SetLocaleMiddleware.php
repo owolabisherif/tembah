@@ -22,8 +22,6 @@ class SetLocaleMiddleware
         app()->setLocale($lang);
 
         URL::defaults(["lang" => $lang]);
-
-        Log::info($lang);
             
         return $next($request);
     }

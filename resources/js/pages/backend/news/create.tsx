@@ -3,7 +3,7 @@ import { BreadcrumbItem, CreateNewsProp } from '@/types';
 import { Head } from '@inertiajs/react';
 import NewsForm from './components/news-form';
 
-export default function Index({ newsTypes, authors, leagues, teams, news, ...props }: CreateNewsProp) {
+export default function Index({ newsTypes, authors, leagues, teams, news, players, countries, ...props }: CreateNewsProp) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'News',
@@ -19,7 +19,15 @@ export default function Index({ newsTypes, authors, leagues, teams, news, ...pro
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${news ? 'Edit' : 'Create'} news`} />
             <div className="overflow-y-hidden p-4">
-                <NewsForm newsTypes={newsTypes} authors={authors} leagues={leagues} teams={teams} news={news} />
+                <NewsForm
+                    newsTypes={newsTypes}
+                    authors={authors}
+                    leagues={leagues}
+                    teams={teams}
+                    news={news}
+                    players={players}
+                    countries={countries}
+                />
             </div>
         </AppLayout>
     );

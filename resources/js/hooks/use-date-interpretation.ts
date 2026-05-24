@@ -1,10 +1,11 @@
 import { isDate, isToday, isTomorrow, isYesterday, parse } from "date-fns";
+import { t } from "i18next";
 
 const useDateInterpretation = (dt: string): string => {
     
-    if(isToday(dt)) return "Today"
-    if(isTomorrow(dt)) return 'Tomorrow';
-    if(isYesterday(dt)) return 'Yesterday';
+    if(isToday(dt)) return t("Today")
+    if(isTomorrow(dt)) return t('Tomorrow');
+    if(isYesterday(dt)) return t('Yesterday');
     return dt
 }
 

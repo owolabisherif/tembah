@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Log;
 
 class StorePlayerAction {
     public static function handle($playerId, $shirt) {
-        $key =  env("GOAL_SERVE_KEY");
-        $endPoint = env("GOAL_SERVE_ENDPOINT");
+        $key =  config('api.key');
+        $endPoint = config('api.endpoint');
         $ar = new Arabic();
 
         $req = Http::get("{$endPoint}/{$key}/soccerstats/player/$playerId?json=1");
@@ -28,11 +28,14 @@ class StorePlayerAction {
             return [];
         }
 
-        $image = @$player["image"] ? base64ToImage($player["image"], public_path("assets/images/players/{$player['@id']}.jpeg")) : null;
+        $path = @$player["image"] ? base64ToImage($player["image"], storage_path("app/public/uploads/images/players/{$player['@id']}.png")) : null;
+        $image = $path ? "{$player['@id']}.png" : null;
 
         $date = Carbon::parse(@$player["birthdate"]);
 
-        $team = Team::whereTeamId(@$player["teamid"])->first(["image"]);
+        $team_flag = @$player["teamid"] ? "{$player['teamid']}.png" : null;
+
+        $playerExist = Player::wherePlayerId($playerId)->first();
 
         $data = [
             "player_id" => $playerId,
@@ -64,16 +67,16 @@ class StorePlayerAction {
             "age_ar" => getArabic(@$player["age"]),
             "height" => @$player["height"],
             "height_ar" => getArabic(@$player["height"]),
-            "shirt" => $shirt,
+            "shirt" => $playerExist && $shirt == 0 ? $playerExist->shirt : $shirt,
             "shirt_ar" => getArabic($shirt),
             "preferred_foot" => @$player["preferredFoot"],
             "preferred_foot_ar" => getArabic(@$player["preferredFoot"]),
             "market_value" => @$player["marketValueEUR"],
             "weight" => @$player["weight"],
             "weight_ar" => getArabic(@$player["weight"]),
-            "image" => $image ? url("assets/images/players/{$player['@id']}.jpeg") : null,
+            "image" => $image,
             "team" => @$player["team"],
-            "team_flag" => @$team->image,
+            "team_flag" => $team_flag,
             "team_ar" => getArabic(@$player["team"]),
             "statistic" => json_encode(@$player["statistic"]),
             "statistic_cups" => json_encode(@$player["statistic_cups"]),
@@ -85,11 +88,13 @@ class StorePlayerAction {
         ];
 
 
-        $team = Player::updateOrCreate(["player_id" => $playerId], $data);
+        $actor = Player::updateOrCreate(["player_id" => $playerId], $data);
 
-        $team->refresh();
+        $actor->refresh();
 
-        return $team;
+        $actor->load(["seo", "currentTeam"]);
+
+        return $actor;
     }
 
 

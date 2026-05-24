@@ -14,8 +14,8 @@ class GetGamesAction
 
     public function  __construct(private string $period)
     {
-        $this->key =  env("GOAL_SERVE_KEY");
-        $this->endPoint = env("GOAL_SERVE_ENDPOINT");
+        $this->key =  config('api.key');
+        $this->endPoint = config('api.endpoint');
     }
 
     public static function make(string $period): static {

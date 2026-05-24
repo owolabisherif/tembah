@@ -23,6 +23,6 @@ class StoreFixturesJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Fixture::upsert([...$this->match], ["static_id"], ["date","fixture_id", "league_id", "slug", "league", "country", "match"]);
+        Fixture::upsert([...$this->match], ["static_id"], ["fixture_id", "static_id", "slug", "league_id", "home_team_id", "away_team_id", "league", "country" ,"date", "match"]);
     }
 }

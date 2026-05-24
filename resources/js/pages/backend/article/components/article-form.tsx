@@ -5,35 +5,40 @@ import { Label } from '@/components/ui/label';
 import MessageBox from '@/components/ui/message-box';
 import QuillEditor from '@/components/ui/quill-editor';
 import { Select as RadSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useUrlToImageConverter from '@/hooks/use-url-to-image-converter';
 import { cn } from '@/lib/utils';
 import { CreateNewsProp, SubmitScheduleButtonData } from '@/types';
 import useArticleValidator from '@/validators/use-article-validator';
+import { router } from '@inertiajs/react';
 import axios from 'axios';
 import { ChangeEvent, startTransition, useEffect, useOptimistic, useRef, useState } from 'react';
 import makeAnimated from 'react-select/animated';
 import Select from 'react-select/creatable';
 
-type NewsOptionType = 'text' | 'video';
+type ArticleOptionType = 'text' | 'video' | 'transfer';
 
-type NewsFormType = {
+type ArticleFormType = {
     id: number | null;
     title: string;
     title_ar: string;
-    type: NewsOptionType;
+    type: ArticleOptionType;
     author: string;
     body: string;
     body_ar: string;
     images: any[];
     tags: any[];
     leagues: any[];
+    _method: string;
     teams: any[];
     players: any[];
     action: SubmitScheduleButtonData | null;
-    video: string | null;
+    video: any;
     meta_title: string | null;
     meta_title_ar: string | null;
     meta_desc: string | null;
     meta_desc_ar: string | null;
+    keywords: string | null;
+    keywords_ar: string | null;
     status: boolean;
     in_slider: boolean;
 };
@@ -52,7 +57,7 @@ type NewOption = {
     location?: string;
 };
 
-export default function ArticleForm({ newsTypes, authors, teams, leagues, players, ...props }: CreateNewsProp) {
+export default function ArticleForm({ newsTypes, authors, teams, leagues, players, article, ...props }: CreateNewsProp) {
     const bodyRef = useRef<any>(null);
     const bodyArRef = useRef<any>(null);
     const submitButtonRef = useRef<any>(null);
@@ -68,7 +73,8 @@ export default function ArticleForm({ newsTypes, authors, teams, leagues, player
     const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('error');
     const [productCategories, setProductCategories] = useState<SelectType[]>([]);
     const [productTags, setProductTags] = useState<SelectType[]>([]);
-    const [form, setForm] = useState<NewsFormType>({
+    const [isEditing, setIsEditing] = useState(false);
+    const [form, setForm] = useState<ArticleFormType>({
         id: null,
         title: '',
         title_ar: '',
@@ -82,6 +88,9 @@ export default function ArticleForm({ newsTypes, authors, teams, leagues, player
         meta_title_ar: '',
         meta_desc: '',
         meta_desc_ar: '',
+        keywords: '',
+        keywords_ar: '',
+        _method: 'post',
         action: null,
         tags: [],
         leagues: [],
@@ -127,6 +136,74 @@ export default function ArticleForm({ newsTypes, authors, teams, leagues, player
         getRemoteData();
     }, []);
 
+    useEffect(() => {
+        if (article && Object.entries(article).length) {
+            console.log(article);
+            handleFormPrefill();
+        }
+    }, [article]);
+
+    const handleFormPrefill = async () => {
+        setIsEditing(true);
+        let images: any = [''];
+
+        if (article.image) {
+            let file = await useUrlToImageConverter(article.image.name as string);
+
+            images = [file];
+
+            dropZone.current.getPreview(images[0]);
+        }
+
+        let video: string | File = '';
+
+        if (article.type == 'video') {
+            video = await useUrlToImageConverter(article.video_url);
+            dropVideoZone.current.getPreview(video);
+        }
+
+        setForm((values) => ({
+            ...values,
+            id: article.id,
+            status: Boolean(article.status),
+            type: article.type == 'text' ? 'text' : article.type == 'video' ? 'video' : 'transfer',
+            in_slider: Boolean(article.in_slider),
+            title: article.title,
+            title_ar: article.title_ar,
+            action: article.scheduled_for ? { type: 'schedule', payload: article.scheduled_for } : { type: 'now', payload: '' },
+            body: article.body,
+            author: article.author ? `${article.author_id}` : '',
+            body_ar: article.body_ar,
+            meta_title: article?.seo?.meta_title ? article?.seo?.meta_title : '',
+            meta_title_ar: article?.seo?.meta_title_ar ? article?.seo?.meta_title_ar : '',
+            meta_desc: article?.seo?.meta_desc ? article?.seo?.meta_desc : '',
+            meta_desc_ar: article?.seo?.meta_desc_ar ? article?.seo?.meta_desc_ar : '',
+            keywords: article?.seo?.keywords ? article?.seo?.keywords : '',
+            keywords_ar: article?.seo?.keywords_ar ? article?.seo?.keywords_ar : '',
+            video: article.video_url ? video : '',
+            _method: 'put',
+            tags:
+                article.tags.length &&
+                article.tags.map((item: any) => ({ value: item.id.toString(), label: `${item.title} (${item.title_ar})`, color: '#000000' })),
+            teams:
+                article.teams.length &&
+                article.teams.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' })),
+            leagues:
+                article.leagues.length &&
+                article.leagues.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' })),
+            players:
+                article.players.length &&
+                article.players.map((item: any) => ({ value: item.id.toString(), label: `${item.name} (${item.name_ar})`, color: '#000000' })),
+            images: images,
+        }));
+
+        const delta = bodyRef.current.clipboard.convert({ html: article.body });
+        const deltaAr = bodyRef.current.clipboard.convert({ html: article.body_ar });
+
+        bodyRef.current.setContents(delta);
+        bodyArRef.current.setContents(deltaAr);
+    };
+
     const resetForm = () => {
         dropZone.current?.reset();
         dropVideoZone.current?.reset();
@@ -145,10 +222,13 @@ export default function ArticleForm({ newsTypes, authors, teams, leagues, player
             meta_title_ar: '',
             meta_desc: '',
             meta_desc_ar: '',
+            keywords: '',
+            keywords_ar: '',
             action: null,
             tags: [],
             leagues: [],
             teams: [],
+            _method: 'post',
             players: [],
             status: true,
             in_slider: false,
@@ -260,7 +340,11 @@ export default function ArticleForm({ newsTypes, authors, teams, leagues, player
             setMessageType('success');
             setMessage((err) => [res.data.message]);
 
-            resetForm();
+            if (isEditing) {
+                router.get(route('article.index'));
+            } else {
+                resetForm();
+            }
         } catch (error) {
             setMessageType('error');
             setMessage((err) => [...err, (error as any).response.data.message]);
@@ -402,7 +486,7 @@ export default function ArticleForm({ newsTypes, authors, teams, leagues, player
                             <div className="flex w-full justify-end">
                                 <SubmitScheduleDropdown
                                     value={form.action ?? { type: 'now', payload: '' }}
-                                    defaultText={`${form.action?.type == 'schedule' ? 'Schedule Post' : 'Post Now'}  `}
+                                    defaultText={article ? 'Update Post' : `${form.action?.type == 'schedule' ? 'Schedule Post' : 'Post Now'}  `}
                                     onChange={(data) => handleCustomChange('action', data)}
                                     disabled={processing}
                                     handleSubmit={() => submit()}
@@ -591,6 +675,38 @@ export default function ArticleForm({ newsTypes, authors, teams, leagues, player
                                 value={form.meta_desc_ar ?? ''}
                                 onChange={(e) => handleChange(e)}
                             />
+                        </div>
+
+                        <div className="mt-5 mb-2">
+                            <p className="text-sm font-bold text-red-500">
+                                <span className="text-black">Note:</span> Keywords should be comma seperated.
+                            </p>
+                        </div>
+                        <div className="col-span-12 mb-1">
+                            <Label htmlFor="keywords">Keywords</Label>
+                            <Input
+                                id="keywords"
+                                type="text"
+                                name="keywords"
+                                placeholder="Enter keywords"
+                                value={form.keywords ?? ''}
+                                onChange={(e) => handleChange(e)}
+                            />
+                            {errorKeys.includes('keywords') && <p className="text-xs text-red-500">{messages['keywords']}</p>}
+                        </div>
+
+                        <div className="col-span-12 mb-10">
+                            <Label htmlFor="keywords_ar">Keywords (Arabic)</Label>
+                            <Input
+                                id="keywords_ar"
+                                type="text"
+                                name="keywords_ar"
+                                dir="rtl"
+                                placeholder="Enter keywords (arabic)"
+                                value={form.keywords_ar ?? ''}
+                                onChange={(e) => handleChange(e)}
+                            />
+                            {errorKeys.includes('keywords_ar') && <p className="text-xs text-red-500">{messages['keywords_ar']}</p>}
                         </div>
                     </div>
                 </div>

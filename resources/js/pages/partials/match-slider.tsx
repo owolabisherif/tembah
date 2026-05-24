@@ -2,6 +2,7 @@ import MatchCard from '@/components/match-card';
 import SlickSlider from '@/components/slick-slider';
 import PageNotFound from '@/components/svgs/page-not-found';
 import { FixtureMatch } from '@/types/match';
+import { t } from 'i18next';
 
 type MatchSliderProp = {
     showArrow: boolean;
@@ -21,7 +22,7 @@ export default function MatchSlider({ showArrow = false, autoplay = true, matche
         <div className="flex flex-col items-center justify-center">
             <PageNotFound />
             <div className="mt-5">
-                <h3 className="text-xs font-bold text-black">Nothing here, please check back.</h3>
+                <h3 className="text-xs font-bold text-black">{t('No information to show. Please try again.')}</h3>
             </div>
         </div>
     );

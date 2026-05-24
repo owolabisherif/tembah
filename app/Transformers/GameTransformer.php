@@ -7,6 +7,7 @@ use App\Enums\MatchEvent;
 use App\Jobs\StoreFixturesJob;
 use App\Jobs\StoreLeagueFixturesJob;
 use App\Jobs\StoreTeamImageJob;
+use App\Jobs\StoreTeamJob;
 use App\Models\Fixture;
 use App\Models\League;
 use App\Models\LeagueFixture;
@@ -81,6 +82,7 @@ class GameTransformer
                 $updatedMatch = $this->formatBadData($game->{'@id'}, @$game->matches->{'@formatted_date'}, $game->{'@name'}, $game->{'@file_group'},$gameData);
             }
 
+
             if(empty($updatedMatch)) {
                 continue;
             }
@@ -91,6 +93,7 @@ class GameTransformer
             $data = [...$data, [
                 "id" => $game->{'@id'},
                 "league" => $game->{'@name'},
+                "leagueAr" => getArabic($game->{'@name'}),
                 "leagueData" => $leagueData,
                 "imageUrl" => null,
                 "country" => $game->{'@file_group'},
@@ -197,10 +200,15 @@ class GameTransformer
 
     private function format($matchList, $league, $date, $leagueName, $country): array {
         $fixtures = [];
+
+        
        
         foreach ($matchList as $match) {
             $localHasLogo = Team::whereTeamId(@$match->localteam->{"@id"})->first(["image"]);
             $visitorHasLogo = Team::whereTeamId(@$match->visitorteam->{"@id"})->first(["image"]);
+            
+            // if($localHasLogo && @$match->localteam->{"@id"}) StoreTeamJob::dispatch(@$match->localteam->{"@id"});
+            // if($visitorHasLogo && @$match->visitorteam->{"@id"}) StoreTeamJob::dispatch(@$match->visitorteam->{"@id"});
 
             $dateString = @$match->{"@formatted_date"} != '' ? explode(".", Carbon::parse(@$match->{"@formatted_date"})->format("Y.m.d")) : [now()->year, now()->month, now()->day];
 
@@ -264,14 +272,18 @@ class GameTransformer
                 "time" => $gameTime->format("h:i A"),
                 "commentaryId" => @$match->{"@commentary_available"},
                 "venue" => @$match->{"@venue"},
+                "venueAr" => getArabic(@$match->{"@venue"}),
                 "venueCity" => @$match->{"@venue"},
+                "venueCityAr" => getArabic(@$match->{"@venue"}),
                 "venueId" => @$match->{"@v"},
                 "isNext" => @$match->{"@formatted_date"} != "" ? $next->eq($now) : false,
                 "homeTeam" => [
                     "slug" => $homeTeamSlug,
+                    "slugAr" => makeArabicSlug(getArabic(@$match->localteam->{"@name"})),
                     "teamId" => @$match->localteam->{"@id"},
                     "logo" => @$localHasLogo->image ?: null,
                     "name" => @$match->localteam->{"@name"},
+                    "nameAr" => getArabic(@$match->localteam->{"@name"}),
                     "ftScore" => (int) @$match->localteam->{"@goals"},
                     "hasRed" => $this->checkEventForTeam('localteam', $events, MatchEvent::RedCard),
                     "hasYellow" => $this->checkEventForTeam('localteam', $events, MatchEvent::YellowCard),
@@ -279,9 +291,11 @@ class GameTransformer
                 ],
                 "awayTeam" => [
                     "slug" => $awayTeamSlug,
+                    "slugAr" => makeArabicSlug(getArabic(@$match->visitorteam->{"@name"})),
                     "teamId" => @$match->visitorteam->{"@id"},
                     "logo" => @$visitorHasLogo->image ?: null,
                     "name" => @$match->visitorteam->{"@name"},
+                    "nameAr" => getArabic(@$match->visitorteam->{"@name"}),
                     "ftScore" => (int) @$match->visitorteam->{"@goals"},
                     "hasRed" => $this->checkEventForTeam('visitorteam', $events, MatchEvent::RedCard),
                     "hasYellow" => $this->checkEventForTeam('visitorteam', $events, MatchEvent::YellowCard),
@@ -300,6 +314,8 @@ class GameTransformer
                 $this->fixturesToStore = [...$this->fixturesToStore, [
                     "league_id" => $league,
                     "slug" => $homeTeamSlug."-vs-".$awayTeamSlug."-".$data["staticId"],
+                    "home_team_id" => $data["homeTeam"]["teamId"],
+                    "away_team_id" => $data["awayTeam"]["teamId"],
                     "fixture_id" => !empty(@$data["fixId"])  ? @$data["fixId"] : null,
                     "static_id" => $data["staticId"],
                     "league" => $leagueName,
@@ -366,9 +382,11 @@ class GameTransformer
             "isNext" => @$match->{"@formatted_date"} != "" ? $next->eq($now) : false,
             "homeTeam" => [
                 "slug" => $homeTeamSlug,
+                "slugAr" => makeArabicSlug(@$match->localteam->{"@name"}),
                 "teamId" => @$match->localteam->{"@id"},
                 "logo" => @$localHasLogo->image ?: null,
                 "name" => @$match->localteam->{"@name"},
+                "nameAr" => getArabic(@$match->localteam->{"@name"} ?? ""),
                 "ftScore" => (int) @$match->localteam->{"@goals"},
                 "hasRed" => $this->checkEventForTeam('localteam', $events, MatchEvent::RedCard),
                 "hasYellow" => $this->checkEventForTeam('localteam', $events, MatchEvent::YellowCard),
@@ -376,9 +394,11 @@ class GameTransformer
             ],
             "awayTeam" => [
                 "slug" => $awayTeamSlug,
+                "slugAr" => makeArabicSlug(@$match->visitorteam->{"@name"}),
                 "teamId" => @$match->visitorteam->{"@id"},
                 "logo" => @$visitorHasLogo->image ?: null,
                 "name" => @$match->visitorteam->{"@name"},
+                "nameAr" => getArabic(@$match->visitorteam->{"@name"} ?? ""),
                 "ftScore" => (int) @$match->visitorteam->{"@goals"},
                 "hasRed" => $this->checkEventForTeam('visitorteam', $events, MatchEvent::RedCard),
                 "hasYellow" => $this->checkEventForTeam('visitorteam', $events, MatchEvent::YellowCard),
@@ -397,6 +417,8 @@ class GameTransformer
                 "slug" => $homeTeamSlug . "-vs-" . $awayTeamSlug . "-" . $data["staticId"],
                 "fixture_id" => !empty(@$data["fixId"])  ? @$data["fixId"] : null,
                 "static_id" => $data["staticId"],
+                "home_team_id" => $data["homeTeam"]["teamId"],
+                "away_team_id" => $data["awayTeam"]["teamId"],
                 "league" => $leagueName,
                 "country" => $country,
                 "date" => $date,
@@ -507,7 +529,6 @@ class GameTransformer
 
     public function get(): array {
         $this->storeTeamImage();
-
         StoreFixturesJob::dispatch($this->fixturesToStore);
         
         $this->fixturesToStore = [];

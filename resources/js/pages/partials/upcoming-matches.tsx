@@ -3,12 +3,15 @@ import MatchCardLoader from '@/components/match-card-loader';
 import SelectOption from '@/components/select-option';
 import SelectValue from '@/components/select-value';
 import SlickSlider from '@/components/slick-slider';
+import ViewAllButton from '@/components/ui/view-all-button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import useFixtureStore from '@/stores/use-fixtures-store';
+import { SharedData } from '@/types';
 import { FixtureMatch } from '@/types/match';
-import { Link, usePoll } from '@inertiajs/react';
+import { usePage, usePoll } from '@inertiajs/react';
+import { t } from 'i18next';
 // import { startOfMonth } from 'date-fns';
-import { ChevronRight } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 // import DatePicker from 'react-datepicker';
 import Select from 'react-select';
 
@@ -19,24 +22,35 @@ export default function UpcomingMatches() {
         useFixtureStore();
     const [games, setGames] = useState<FixtureMatch[]>([]);
 
-    const periods = useRef([
-        {
-            value: 'home',
-            label: 'Today',
-        },
-        {
-            value: 'd-1',
-            label: 'Yesterday',
-        },
-        {
-            value: 'd1',
-            label: 'Tommorrow',
-        },
-        // {
-        //     value: 'live',
-        //     label: 'Live',
-        // },
-    ]);
+    const isMobile = useIsMobile();
+
+    const periodList = usePage<SharedData>().props.periods;
+
+    // const periods = useRef([
+    //     {
+    //         value: 'home',
+    //         label: t('Today'),
+    //     },
+    //     {
+    //         value: 'd-1',
+    //         label: t('Yesterday'),
+    //     },
+    //     {
+    //         value: 'd1',
+    //         label: t('Tomorrow'),
+    //     },
+    //     {
+    //         value: 'live',
+    //         label: 'Live',
+    //     },
+    // ]);
+
+    useEffect(() => {
+        if (periodList.length) {
+            for (const item of periodList) {
+            }
+        }
+    }, [periodList]);
 
     const { start, stop } = usePoll(
         60000,
@@ -44,10 +58,7 @@ export default function UpcomingMatches() {
             onStart() {
                 refreshFixtures();
             },
-            onFinish() {
-                console.log(matches);
-                console.log('finish');
-            },
+            onFinish() {},
         },
         { autoStart: false },
     );
@@ -84,7 +95,7 @@ export default function UpcomingMatches() {
         setGames(gameList);
     };
 
-    const loaders = Array.from({ length: 4 });
+    const loaders = Array.from({ length: isMobile ? 1 : 4 });
 
     const handleGetGames = (fixtureId: number) => {
         const gameList = fixtureId == 0 ? matches : getFilteredMatches(fixtureId);
@@ -112,34 +123,33 @@ export default function UpcomingMatches() {
     };
 
     return (
-        <div className="mb-5">
+        <div className="my-5">
             <>
                 {Boolean(matches.length) && (
                     <div>
-                        <div className="flex items-center justify-between">
-                            <h1 className="mt-5 mb-3 text-lg font-bold text-black">Upcoming Matches</h1>
-                            <Link href={route('soccer.matches', { period: period })} className="flex items-center">
-                                <p className="text-xs font-black">View all</p>
-                                <ChevronRight className="w-3" />
-                            </Link>
+                        <div className="mb-3 flex items-center justify-between">
+                            <h1 className="text-lg font-bold text-black dark:text-white">{t('Upcoming Matches')}</h1>
+                            <ViewAllButton href={route('soccer.matches', { period: period })} />
                         </div>
-                        <div className="relative z-[1000] mb-5">
+                        <div className="relative z-[1000] mb-2">
                             <div className="flex items-center gap-x-5">
-                                <Select
-                                    openMenuOnClick={false}
-                                    placeholder="Filter fixtures..."
-                                    onChange={handleChange}
-                                    isSearchable={false}
-                                    isClearable={true}
-                                    isMulti={false}
-                                    options={leagues}
-                                    components={{ Option: SelectOption, SingleValue: SelectValue }}
-                                    classNames={{
-                                        control: (state) =>
-                                            '!rounded-full !focus:ring-0 !active:ring-0 !border-gray-300 !w-64 !focus:outline-none !active:outline-none !focus:border-0',
-                                    }}
-                                />
-                                <div>
+                                <div className="flex-1 md:w-64 md:flex-none">
+                                    <Select
+                                        openMenuOnClick={false}
+                                        placeholder={t('Filter fixtures...')}
+                                        onChange={handleChange}
+                                        isSearchable={false}
+                                        isClearable={true}
+                                        isMulti={false}
+                                        options={leagues}
+                                        components={{ Option: SelectOption, SingleValue: SelectValue }}
+                                        classNames={{
+                                            control: (state) =>
+                                                '!rounded-full !focus:ring-0 !active:ring-0 !border-gray-300 !w-full !focus:outline-none !active:outline-none !focus:border-0 !dark:bg-neutral-800',
+                                        }}
+                                    />
+                                </div>
+                                <div className="flex-1 md:w-64 md:flex-none">
                                     {/* <DatePicker
                                         selected={selectedDate}
                                         onChange={setSelectedDate}
@@ -150,14 +160,14 @@ export default function UpcomingMatches() {
                                     /> */}
                                     <Select
                                         openMenuOnClick={false}
-                                        defaultValue={periods.current[0]}
+                                        defaultValue={periodList.length ? periodList?.find((item) => item.value == 'home') : []}
                                         onChange={handlePeriod}
                                         isSearchable={false}
                                         isMulti={false}
-                                        options={periods.current}
+                                        options={periodList}
                                         classNames={{
                                             control: (state) =>
-                                                '!rounded-full !focus:ring-0 !active:ring-0 !border-gray-300 !w-64 !focus:outline-none !active:outline-none !focus:border-0',
+                                                '!rounded-full !focus:ring-0 !active:ring-0 !border-gray-300 !w-full  !focus:outline-none !active:outline-none !focus:border-0',
                                         }}
                                     />
                                 </div>
@@ -170,14 +180,14 @@ export default function UpcomingMatches() {
             {loading ? (
                 <div className="my-3 grid grid-cols-12 gap-x-2">
                     {loaders.map((item, index) => (
-                        <div className="col-span-3" key={index}>
+                        <div className={isMobile ? 'col-span-12' : 'col-span-3'} key={index}>
                             <MatchCardLoader />
                         </div>
                     ))}
                 </div>
             ) : matches.length && !loading ? (
                 <div className="">
-                    <SlickSlider showArrow={true} autoplay={false} initialSlide={0}>
+                    <SlickSlider showArrow={!isMobile && true} autoplay={false} initialSlide={0}>
                         {games.map((item) => (
                             <MatchCard {...item} key={item.id} />
                         ))}

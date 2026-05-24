@@ -7,6 +7,7 @@ import { PlayerInformation } from '@/types/match';
 import { Deferred } from '@inertiajs/react';
 import { CategoryScale, Chart as ChartJS, Filler, Legend, LinearScale, LineElement, PointElement, Title, Tooltip } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import i18next, { t } from 'i18next';
 import { ArrowLeftCircleIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
@@ -25,7 +26,6 @@ export default function Index({ slug, player }: ShowPlayerProp) {
 
     useEffect(() => {
         if (player) {
-            console.log(player);
             getChartData();
         }
     }, [player]);
@@ -62,7 +62,7 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                     },
                     title: {
                         display: true,
-                        text: `Market value ${mv ? useNumberFormatter(+mv!) : 0}`,
+                        text: `${t('Market value')} ${mv ? useNumberFormatter(+mv!) : 0}`,
                     },
                 },
             });
@@ -106,20 +106,20 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                         className="flex cursor-pointer items-center gap-x-2 rounded-sm px-1.5 py-1 hover:bg-gray-300"
                     >
                         <ArrowLeftCircleIcon className="w-8" />
-                        <p className="text-xs font-bold">Back</p>
+                        <p className="text-xs font-bold">{t('Back')}</p>
                     </button>
                 </div>
 
                 {player ? (
                     <>
-                        <div className="my-5 w-full text-black" dir="">
+                        <div className="my-5 w-full text-black">
                             <div className="flex items-center justify-between rounded-t-sm bg-red-500 px-2 py-5 shadow-sm">
                                 <div className="flex items-center justify-center gap-x-3">
                                     <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 p-0.5">
                                         <img className="h-full w-full rounded-full object-contain" src={player.image ?? usePlaceholderImage()} />
                                     </div>
                                     <div>
-                                        <h1 className="font-bold text-white">{player.name}</h1>
+                                        <h1 className="font-bold text-white">{i18next.language == 'en' ? player.name : player.nameAr}</h1>
                                         <div className="flex items-center gap-x-1">
                                             <div className="flex h-6 w-6 items-center justify-center rounded-full border border-gray-200">
                                                 <img
@@ -127,32 +127,36 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                                                     src={player.teamFlag ?? usePlaceholderImage()}
                                                 />
                                             </div>
-                                            <h2 className="text-xs text-white capitalize">{player.team}</h2>
+                                            <h2 className="text-xs text-white capitalize">
+                                                {i18next.language == 'en' ? player.team : player.teamAr}
+                                            </h2>
                                         </div>
                                     </div>
                                 </div>
                                 <div>
-                                    <button className="cursor-pointer rounded-full bg-white px-4 py-2 text-sm font-bold text-red-500 hover:bg-blue-900 hover:text-white">
-                                        Follow
-                                    </button>
+                                    {/* <button className="cursor-pointer rounded-full bg-white px-4 py-2 text-sm font-bold text-red-500 hover:bg-blue-900 hover:text-white">
+                                        {t('Follow')}
+                                    </button> */}
                                 </div>
                             </div>
                             <div className="grid grid-cols-12 gap-x-3 gap-y-5 rounded-b-sm bg-white p-2 shadow-sm">
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
-                                    <h3 className="mb-0 text-lg font-bold text-black">{player.age} years</h3>
+                                    <h3 className="mb-0 text-lg font-bold text-black">
+                                        {player.age} {t('years')}
+                                    </h3>
                                     <p className="text-xs font-bold text-gray-500">{player.birthDate ?? '-'}</p>
                                 </div>
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
                                     <h3 className="mb-0 text-lg font-bold text-black">{player.height ?? '-'}</h3>
-                                    <p className="text-xs font-bold text-gray-500">Height</p>
+                                    <p className="text-xs font-bold text-gray-500">{t('Height')}</p>
                                 </div>
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
-                                    <h3 className="mb-0 text-lg font-bold text-black">{player.shirt}</h3>
-                                    <p className="text-xs font-bold text-gray-500">Shirt</p>
+                                    <h3 className="mb-0 text-lg font-bold text-black">{player.shirt != '0' ? player.shirt : '-'}</h3>
+                                    <p className="text-xs font-bold text-gray-500">{t('Shirt')}</p>
                                 </div>
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
                                     <h3 className="mb-0 text-lg font-bold text-black">{player.weight ?? '-'}</h3>
-                                    <p className="text-xs font-bold text-gray-500">Weight</p>
+                                    <p className="text-xs font-bold text-gray-500">{t('Weight')}</p>
                                 </div>
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
                                     <div className="flex items-center gap-x-1">
@@ -162,27 +166,35 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                                                 src={player.birthCountryFlag ?? usePlaceholderImage()}
                                             />
                                         </div>
-                                        <h3 className="mb-0 text-lg font-bold text-black">{player.birthCountry}</h3>
+                                        <h3 className="mb-0 text-lg font-bold text-black">
+                                            {i18next.language == 'en' ? player.birthCountry : player.birthCountryAr}
+                                        </h3>
                                     </div>
-                                    <p className="text-xs font-bold text-gray-500">Country</p>
+                                    <p className="text-xs font-bold text-gray-500">{t('Country')}</p>
                                 </div>
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
-                                    <h3 className="mb-0 text-lg font-bold text-black">{player.birthPlace ?? '-'}</h3>
-                                    <p className="text-xs font-bold text-gray-500">Birth place</p>
+                                    <h3 className="mb-0 text-lg font-bold text-black">
+                                        {player.birthPlace ? (i18next.language == 'en' ? player.birthPlace : player.birthPlaceAr) : '-'}
+                                    </h3>
+                                    <p className="text-xs font-bold text-gray-500">{t('Birth place')}</p>
                                 </div>
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
-                                    <h3 className="mb-0 text-lg font-bold text-black">{player.position}</h3>
-                                    <p className="text-xs font-bold text-gray-500">Position</p>
+                                    <h3 className="mb-0 text-lg font-bold text-black">
+                                        {i18next.language == 'en' ? player.position : player.positionAr}
+                                    </h3>
+                                    <p className="text-xs font-bold text-gray-500">{t('Position')}</p>
                                 </div>
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
-                                    <h3 className="mb-0 text-lg font-bold text-black">{player.preferredFoot ?? '-'}</h3>
-                                    <p className="text-xs font-bold text-gray-500">Preferred foot</p>
+                                    <h3 className="mb-0 text-lg font-bold text-black">
+                                        {player.preferredFoot ? (i18next.language == 'en' ? player.preferredFoot : player.preferredFootAr) : '-'}
+                                    </h3>
+                                    <p className="text-xs font-bold text-gray-500">{t('Preferred foot')}</p>
                                 </div>
                                 <div className="col-span-3 border-b border-b-gray-100 pb-2">
                                     <h3 className="mb-0 text-lg font-bold text-black">
                                         {player.marketValue ? useNumberFormatter(+player.marketValue) : '-'}
                                     </h3>
-                                    <p className="text-xs font-bold text-gray-500">Transfer value</p>
+                                    <p className="text-xs font-bold text-gray-500">{t('Transfer value')}</p>
                                 </div>
                             </div>
                         </div>
@@ -197,7 +209,7 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                             <>
                                 <div className="mt-5 flex items-center justify-between rounded-t-sm bg-blue-900 px-2 py-4 shadow-sm">
                                     <h3 className="font-bold text-white">
-                                        {player.statistic.league} {player.statistic.season}
+                                        {i18next.language == 'en' ? player.statistic.league : player.statistic.leagueAr} {player.statistic.season}
                                     </h3>
                                 </div>
                                 <div className="grid grid-cols-12 gap-5 rounded-b-sm bg-white p-5 shadow-sm">
@@ -210,11 +222,11 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                                                 {new Intl.NumberFormat().format(player.statistic.goals)}
                                             </h3>
                                         </div>
-                                        <p className="text-xs font-bold text-gray-500">Goals</p>
+                                        <p className="text-xs font-bold text-gray-500">{t('Goals')}</p>
                                     </div>
                                     <div className="col-span-3 flex flex-col items-center justify-center pb-2">
                                         <h3 className="mb-0 text-lg font-bold text-black">{player.statistic.assist}</h3>
-                                        <p className="text-xs font-bold text-gray-500">Assist</p>
+                                        <p className="text-xs font-bold text-gray-500">{t('Assist')}</p>
                                     </div>
                                     <div className="col-span-3 flex flex-col items-center justify-center pb-2">
                                         <div className="flex items-center gap-x-1">
@@ -225,35 +237,35 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                                                 {new Intl.NumberFormat().format(player.statistic.minutesPlayed)}
                                             </h3>
                                         </div>
-                                        <p className="text-xs font-bold text-gray-500">Minuted played</p>
+                                        <p className="text-xs font-bold text-gray-500">{t('Minutes played')}</p>
                                     </div>
                                     <div className="col-span-3 flex flex-col items-center justify-center pb-2">
                                         <h3 className="mb-0 text-lg font-bold text-black">{player.statistic.matches}</h3>
-                                        <p className="text-xs font-bold text-gray-500">Matches</p>
+                                        <p className="text-xs font-bold text-gray-500">{t('Matches')}</p>
                                     </div>
                                     <div className="col-span-3 flex flex-col items-center justify-center pb-2">
                                         <h3 className="mb-0 text-lg font-bold text-black">{player.statistic.keyPasses}</h3>
-                                        <p className="text-xs font-bold text-gray-500">Key passes</p>
+                                        <p className="text-xs font-bold text-gray-500">{t('Key passes')}</p>
                                     </div>
                                     <div className="col-span-3 flex flex-col items-center justify-center pb-2">
                                         <div className="flex items-center justify-center rounded-sm bg-blue-900 px-2 py-0.5 text-white">
                                             <h3 className="mb-0 text-lg font-bold">{player.statistic.rating}</h3>
                                         </div>
-                                        <p className="text-xs font-bold text-gray-500">Rating</p>
+                                        <p className="text-xs font-bold text-gray-500">{t('Rating')}</p>
                                     </div>
                                     <div className="col-span-3 flex flex-col items-center justify-center pb-2">
                                         <div className="flex items-center gap-x-1">
                                             <div className="h-4 w-3 rounded-xs bg-amber-400"></div>
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.statistic.yellow}</h3>
                                         </div>
-                                        <p className="text-xs font-bold text-gray-500">Yellow card</p>
+                                        <p className="text-xs font-bold text-gray-500">{t('Yellow card')}</p>
                                     </div>
                                     <div className="col-span-3 flex flex-col items-center justify-center pb-2">
                                         <div className="flex items-center gap-x-1">
                                             <div className="h-4 w-3 rounded-xs bg-red-500"></div>
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.statistic.red}</h3>
                                         </div>
-                                        <p className="text-xs font-bold text-gray-500">Red card</p>
+                                        <p className="text-xs font-bold text-gray-500">{t('Red card')}</p>
                                     </div>
                                 </div>
                             </>
@@ -261,9 +273,9 @@ export default function Index({ slug, player }: ShowPlayerProp) {
 
                         <div className="grid grid-cols-12 gap-x-4">
                             {player.trophies.length && (
-                                <div className={cn('flex h-full flex-col', player.overallClubStats ? 'col-span-6' : 'col-span-12')}>
+                                <div className={cn('flex h-full flex-col', player.overallClubStats ? 'col-span-12 md:col-span-6' : 'col-span-12')}>
                                     <div className="mt-5 flex items-center justify-between rounded-t-sm bg-blue-900 px-2 py-4 shadow-sm">
-                                        <h3 className="font-bold text-white">Trophies</h3>
+                                        <h3 className="font-bold text-white">{t('Trophies')}</h3>
                                     </div>
                                     <div className="flex h-full flex-wrap gap-5 rounded-b-sm bg-white p-5 shadow-sm">
                                         {player.trophies.map((item, index) => (
@@ -272,7 +284,9 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                                                     <p>{item.count}</p>
                                                 </div>
                                                 <div className="flex flex-1 flex-col">
-                                                    <h3 className="mb-0 text-sm font-bold text-black">{item.league}</h3>
+                                                    <h3 className="mb-0 text-sm font-bold text-black">
+                                                        {i18next.language == 'en' ? item.league : item.leagueAr}
+                                                    </h3>
                                                     {Boolean(item.seasons.length) && (
                                                         <div className="flex flex-wrap gap-x-1">
                                                             {item.seasons
@@ -294,54 +308,54 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                                 </div>
                             )}
                             {player.overallClubStats && (
-                                <div className={cn('flex h-full flex-col', player.trophies.length ? 'col-span-6' : 'col-span-12')}>
+                                <div className={cn('flex h-full flex-col', player.trophies.length ? 'col-span-12 md:col-span-6' : 'col-span-12')}>
                                     <div className="mt-5 flex items-center justify-between rounded-t-sm bg-blue-900 px-2 py-4 shadow-sm">
-                                        <h3 className="font-bold text-white">Overall Club Statistics</h3>
+                                        <h3 className="font-bold text-white">{t('Overall Club Statistics')}</h3>
                                     </div>
                                     <div className="grid grid-cols-12 gap-5 rounded-b-sm bg-white p-5 shadow-sm">
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.overallClubStats.matches}</h3>
-                                            <p className="text-xs font-bold text-gray-500">Matches</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Matches')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">
                                                 {new Intl.NumberFormat().format(player.overallClubStats.minutesPlayed)}
                                             </h3>
-                                            <p className="text-xs font-bold text-gray-500">Minutes played</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Minutes played')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">
                                                 {new Intl.NumberFormat().format(player.overallClubStats.passes)}
                                             </h3>
-                                            <p className="text-xs font-bold text-gray-500">Passes</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Passes')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.overallClubStats.keyPasses}</h3>
-                                            <p className="text-xs font-bold text-gray-500">Key passes</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Key passes')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.overallClubStats.rating}</h3>
-                                            <p className="text-xs font-bold text-gray-500">Rating</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Rating')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.overallClubStats.dribbles}</h3>
-                                            <p className="text-xs font-bold text-gray-500">Dribbles</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Dribbles')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.overallClubStats.shots}</h3>
-                                            <p className="text-xs font-bold text-gray-500">Shots</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Shots')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.overallClubStats.tackles}</h3>
-                                            <p className="text-xs font-bold text-gray-500">Tackles</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Tackles')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.overallClubStats.penScored}</h3>
-                                            <p className="text-xs font-bold text-gray-500">Penalty scored</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Penalty scored')}</p>
                                         </div>
                                         <div className="col-span-4">
                                             <h3 className="mb-0 text-lg font-bold text-black">{player.overallClubStats.assist}</h3>
-                                            <p className="text-xs font-bold text-gray-500">Assists</p>
+                                            <p className="text-xs font-bold text-gray-500">{t('Assists')}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -351,7 +365,7 @@ export default function Index({ slug, player }: ShowPlayerProp) {
                 ) : (
                     <div className="flex w-full flex-col items-center justify-center">
                         <Ad />
-                        <p className="font-bold">No information avalible for the selected player, please check back later.</p>
+                        <p className="font-bold">{t('No information avalible for the selected player, please check back later.')}</p>
                     </div>
                 )}
             </GuestLayout>

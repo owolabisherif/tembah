@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="index, follow">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
@@ -57,7 +58,13 @@
         <!-- To automatically render math in text elements, include the auto-render extension: -->
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.27/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"
             onload="renderMathInElement(document.body);"></script>
-
+        
+        @include('feed::links')
+        
+        {{-- @php
+            echo getSeo(json_encode($page));
+        @endphp --}}
+        @seo($page)
         @routes
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])

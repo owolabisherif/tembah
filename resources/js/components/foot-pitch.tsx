@@ -2,6 +2,7 @@ import { usePlaceholderImage } from '@/hooks/user-placeholder-image';
 import { cn } from '@/lib/utils';
 import { Fixture, FormationType, MatchOverviewTeam } from '@/types/match';
 import { Link } from '@inertiajs/react';
+import i18next, { t } from 'i18next';
 
 type FootPitchProp = {
     fixture: Fixture;
@@ -17,6 +18,14 @@ const checkTextColorOverlap = (bgColor: string, textColor: string) => {
     return textColor;
 };
 
+const getCoach = (coachData: any) => {
+    if (!coachData) return '-';
+
+    let coach = JSON.parse(coachData);
+
+    return coach['@name'];
+};
+
 export default function FootPitch({ fixture, homeTeam, awayTeam, formation, isPrediction = false }: FootPitchProp) {
     return (
         <>
@@ -30,7 +39,9 @@ export default function FootPitch({ fixture, homeTeam, awayTeam, formation, isPr
                                 className="h-full w-full object-contain object-center"
                             />
                         </div>
-                        <h3 className="text-md line-clamp-1 text-center font-semibold whitespace-normal text-black">{fixture.match.homeTeam.name}</h3>
+                        <h3 className="text-md line-clamp-1 text-center font-semibold whitespace-normal text-black">
+                            {i18next.language == 'en' ? fixture.match.homeTeam.name : fixture.match.homeTeam.nameAr}
+                        </h3>
                     </div>
                     <div className="juce flex items-center rounded-md bg-[#2aad50] px-1.5 py-0.5 text-white">
                         <p className="text-xs font-bold">{homeTeam.lineup.formation}</p>
@@ -39,7 +50,7 @@ export default function FootPitch({ fixture, homeTeam, awayTeam, formation, isPr
 
                 {isPrediction && (
                     <div>
-                        <h3 className="font-bold">Predicted lineups</h3>
+                        <h3 className="font-bold">{t('Predicted lineups')}</h3>
                     </div>
                 )}
 
@@ -52,7 +63,9 @@ export default function FootPitch({ fixture, homeTeam, awayTeam, formation, isPr
                                 className="h-full w-full object-contain object-center"
                             />
                         </div>
-                        <h3 className="text-md line-clamp-1 text-center font-semibold whitespace-normal text-black">{fixture.match.awayTeam.name}</h3>
+                        <h3 className="text-md line-clamp-1 text-center font-semibold whitespace-normal text-black">
+                            {i18next.language == 'en' ? fixture.match.awayTeam.name : fixture.match.awayTeam.nameAr}
+                        </h3>
                     </div>
                     <div className="juce flex items-center rounded-md bg-[#2aad50] px-1.5 py-0.5 text-white">
                         <p className="text-xs font-bold">{awayTeam.lineup.formation}</p>
@@ -75,7 +88,8 @@ export default function FootPitch({ fixture, homeTeam, awayTeam, formation, isPr
                                 key={player.id}
                                 className={cn(`player ${player.team}`)}
                                 style={{
-                                    left: `${player.x}%`,
+                                    left: i18next.language == 'en' ? `${player.x}%` : '0%',
+                                    right: i18next.language == 'ar' ? `${player.x}%` : '0%',
                                     top: `${player.y}%`,
                                 }}
                             >
@@ -118,10 +132,13 @@ export default function FootPitch({ fixture, homeTeam, awayTeam, formation, isPr
                                     >
                                         {player.player.image ? (
                                             <p className="flex-1 text-[10px] font-bold">
-                                                <span className="text-gray-700">{player.player?.number}</span> {player.player?.name}
+                                                <span className="text-gray-700">{player.player?.number}</span>{' '}
+                                                {i18next.language == 'en' ? player.player?.name : player.player?.nameAr}
                                             </p>
                                         ) : (
-                                            <p className="flex-1 text-[10px] font-bold">{player.player?.name}</p>
+                                            <p className="flex-1 text-[10px] font-bold">
+                                                {i18next.language == 'en' ? player.player?.name : player.player?.nameAr}
+                                            </p>
                                         )}
                                     </Link>
                                 </div>
@@ -132,18 +149,16 @@ export default function FootPitch({ fixture, homeTeam, awayTeam, formation, isPr
             </div>
             <div className="flex h-fit w-full justify-between border-b border-b-gray-100 p-3">
                 <div className="flex items-center gap-x-2">
-                    <div className="h-7 w-7 overflow-hidden rounded-full border border-gray-100">
-                        <img src={usePlaceholderImage()} alt={'coach1'} className="h-full w-full object-contain object-center" />
-                    </div>
-                    <h3 className="text-md line-clamp-1 text-center font-semibold whitespace-normal text-black">-</h3>
+                    <h3 className="text-md line-clamp-1 text-center font-semibold whitespace-normal text-black">
+                        {getCoach(fixture.homeTeam ? fixture.homeTeam.coach : null)}
+                    </h3>
                 </div>
 
                 <h3 className="font-bold">Coach</h3>
                 <div className="flex items-center gap-x-2">
-                    <div className="h-7 w-7 overflow-hidden rounded-full border border-gray-100">
-                        <img src={usePlaceholderImage()} alt={'coach2'} className="h-full w-full object-contain object-center" />
-                    </div>
-                    <h3 className="text-md line-clamp-1 text-center font-semibold whitespace-normal text-black">-</h3>
+                    <h3 className="text-md line-clamp-1 text-center font-semibold whitespace-normal text-black">
+                        {getCoach(fixture.awayTeam ? fixture.awayTeam.coach : null)}
+                    </h3>
                 </div>
             </div>
         </>

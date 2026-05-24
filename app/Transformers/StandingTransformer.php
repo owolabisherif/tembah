@@ -39,6 +39,7 @@ class StandingTransformer extends TransformerAbstract
         return [
             "id" => @$standing["@id"] ?? @$standing["id"],
             "name" => @$standing["@name"] ?? @$standing["name"],
+            "nameAr" => getArabic(@$standing["@name"] ?? @$standing["name"]),
             "logo" => @$hasLogo->image ?: null,
             "position" => @$standing["@position"] ?? @$standing["position"],
             "recentForm" => @$standing["@recent_form"] ?? @$standing["recent_form"],
@@ -70,7 +71,7 @@ class StandingTransformer extends TransformerAbstract
             "overall" => [
                 "d" => @$standing["overall"]["@d"] ?? @$standing["overall"]["d"],
                 "ga" => @$standing["overall"]["@ga"] ?? @$standing["overall"]["ga"],
-                "gp" => @$standing["overall"]["@gp"] ?? @$standing["overall"]["gp"],
+                "gp" => getArabic( @$standing["overall"]["@gp"] ?? @$standing["overall"]["gp"]),
                 "gs" => @$standing["overall"]["@gs"] ?? @$standing["overall"]["gs"],
                 "l" => @$standing["overall"]["@l"] ?? @$standing["overall"]["l"],
                 "w" => @$standing["overall"]["@w"] ?? @$standing["overall"]["w"],

@@ -5,11 +5,14 @@ import { Label } from '@/components/ui/label';
 import MessageBox from '@/components/ui/message-box';
 import QuillEditor from '@/components/ui/quill-editor';
 import { Select as RadSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useUrlToImageConverter from '@/hooks/use-url-to-image-converter';
 import { cn } from '@/lib/utils';
 import useAuthorValidator from '@/validators/use-author-validator';
+import { router } from '@inertiajs/react';
 import axios from 'axios';
 import { LoaderCircleIcon } from 'lucide-react';
-import { ChangeEvent, FormEvent, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
+import { AuthorPropType } from '../create';
 
 type AuthorFormType = {
     id: number | null;
@@ -27,6 +30,7 @@ type AuthorFormType = {
     meta_title_ar: string | null;
     meta_desc: string | null;
     meta_desc_ar: string | null;
+    _method: string;
     status: boolean;
 };
 
@@ -44,13 +48,14 @@ type NewOption = {
     location?: string;
 };
 
-export default function AuthorForm() {
+export default function AuthorForm({ author }: AuthorPropType) {
     const aboutRef = useRef<any>(null);
     const aboutArRef = useRef<any>(null);
     const dropZone = useRef<any>(null);
     const [processing, setProcessing] = useState<boolean>(false);
     const [message, setMessage] = useState<string[]>([]);
     const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('error');
+    const [editing, setEditing] = useState<boolean>(false);
     const [form, setForm] = useState<AuthorFormType>({
         id: null,
         name: '',
@@ -68,6 +73,7 @@ export default function AuthorForm() {
         whatsapp: '',
         facebook: '',
         status: true,
+        _method: 'post',
     });
 
     const { error, value, errorKeys, messages } = useAuthorValidator(form);
@@ -92,6 +98,7 @@ export default function AuthorForm() {
             whatsapp: '',
             facebook: '',
             status: true,
+            _method: 'post',
         });
 
         aboutRef.current.setContents([]);
@@ -104,6 +111,40 @@ export default function AuthorForm() {
             left: 0,
             behavior: 'smooth',
         });
+    };
+
+    useEffect(() => {
+        if (author) {
+            handleEdit();
+        }
+    }, [author]);
+
+    const handleEdit = async () => {
+        setEditing(true);
+
+        let image = author.image ? await useUrlToImageConverter(author.image.name) : null;
+
+        setForm((values) => ({
+            ...values,
+            id: author.id,
+            name: author.name,
+            name_ar: author.name_ar,
+            about: author.about ?? '',
+            about_ar: author.about_ar ?? '',
+            web_url: author.wen_url ?? '',
+            facebook: author.facebook ?? '',
+            x: author.x ?? '',
+            instagram: author.instagram ?? '',
+            whatsapp: author.whatsapp ?? '',
+            meta_title: author.seo ? author.seo.meta_title : '',
+            meta_title_ar: author.seo ? author.seo.meta_title_ar : '',
+            meta_desc: author.seo ? author.seo.meta_desc : '',
+            meta_desc_ar: author.seo ? author.seo.meta_desc_ar : '',
+            images: image ? [image] : [],
+            _method: 'put',
+        }));
+
+        if (image) dropZone.current.getPreview(image);
     };
 
     const handleChange = (e: ChangeEvent<any>) => {
@@ -137,6 +178,8 @@ export default function AuthorForm() {
 
         setMessage([]);
 
+        console.log(form);
+
         if (error) {
             setMessageType('error');
             setMessage((err) => [...err, error.message]);
@@ -155,7 +198,11 @@ export default function AuthorForm() {
             setMessageType('success');
             setMessage((err) => [res.data.message]);
 
-            resetForm();
+            if (editing) {
+                router.get(route('author.index'));
+            } else {
+                resetForm();
+            }
         } catch (error) {
             setMessageType('error');
             setMessage((err) => [...err, (error as any).response.data.message]);
@@ -179,7 +226,7 @@ export default function AuthorForm() {
                     </p>
                 </MessageBox>
             )}
-            <form className="grid h-full grid-cols-12 gap-x-4" onSubmit={(e) => submit(e)}>
+            <form className="grid h-full grid-cols-12 gap-x-4" onSubmit={(e) => submit(e)} encType="multipart/form-data">
                 <div className="col-span-8 h-full">
                     <div className={cn('border-brand-gray h-full rounded-sm border p-4 shadow-sm')}>
                         <div className="grid grid-cols-12 gap-x-3">
@@ -251,7 +298,7 @@ export default function AuthorForm() {
                         <div className="mt-10">
                             <div className="flex w-full justify-end">
                                 <Button className="cursor-pointer" disabled={processing}>
-                                    {processing && <LoaderCircleIcon className="size-5 animate-spin" />} SUBMIT
+                                    {processing && <LoaderCircleIcon className="size-5 animate-spin" />} {editing ? 'UPDATE' : 'SUBMIT'}
                                 </Button>
                             </div>
                         </div>

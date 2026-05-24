@@ -24,6 +24,8 @@ class CategoryService
             $imagePaths = array();
             $imagePath = 'uploads/images';
 
+            $status = $request->status == 'true' ? true: false;
+
             $category = Category::updateOrCreate([
                 "id" => $request->id ?? null
             ], [
@@ -31,18 +33,20 @@ class CategoryService
                 "slug_ar" => makeSlug(new Category, $request->titleAr, "slug_ar"),
                 "title" => $request->title,
                 "title_ar" => $request->titleAr,
-                "status" => (bool) $request->status ?? 1,
+                "status" => $status,
+                "sort" => $request->sort ?? 0
             ]);
 
             if ($request->isMethod("PUT")) DropImageAction::handle($category, Category::class, $imagePath);
 
-            if (count($request->images) > 0) {
+            if ($request->images && count($request->images) > 0) {
                 $path = $request->images[0]->store($imagePath, "public");
-                $url = url("/") . "/storage" . "/$path";
                 $imagePaths[] = $path;
+                $imageArray = explode("/", $path);
+                $name = array_pop($imageArray);
 
                 $category->image()->updateOrCreate(["imageable_id" => $category->id], [
-                    "url" => $url,
+                    "name" => $name,
                 ]);
 
                 OptimizeImageJob::dispatch($imagePaths);

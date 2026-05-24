@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Actions\GameCalenderGeneratorAction;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -43,6 +45,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
+            "periods" => GameCalenderGeneratorAction::handle(),
             "adsUrl" => "https://emqatar.com/adserver/www/delivery/fc.php?script=apVideo:vast2&zoneid=1&skipoffset=30",
             'auth' => [
                 'user' => $request->user(),
@@ -53,6 +56,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             "currentSeason" => "2025-2026",
+            "lang" => request()->session()->get('lang', 'ar'),
         ];
     }
 }

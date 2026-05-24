@@ -12,6 +12,7 @@ export default function useAuthorValidator(data: object): {
         name: Joi.string().required(),
         name_ar: Joi.string().required(),
         about: Joi.string().allow(''),
+        _method: Joi.string(),
         about_ar: Joi.string().allow(''),
         images: Joi.array()
             .custom((images, helpers) => {

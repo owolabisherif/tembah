@@ -4,11 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import MessageBox from '@/components/ui/message-box';
 import { Select as RadSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import useUrlToImageConverter from '@/hooks/use-url-to-image-converter';
 import { cn } from '@/lib/utils';
-import useTagValidator from '@/validators/use-tag-validator';
+import useCategoryValidator from '@/validators/use-category-validator';
+import { router } from '@inertiajs/react';
 import axios from 'axios';
 import { LoaderCircleIcon } from 'lucide-react';
-import { ChangeEvent, FormEvent, useRef, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
+import { CategoryPropType } from '../create';
 
 type CategoryFormType = {
     id: number | null;
@@ -20,11 +23,14 @@ type CategoryFormType = {
     meta_title_ar: string | null;
     meta_desc: string | null;
     meta_desc_ar: string | null;
+    _method: string;
+    sort: number;
 };
 
-export default function CategoryForm() {
+export default function CategoryForm({ category }: CategoryPropType) {
     const dropZone = useRef<any>(null);
     const [processing, setProcessing] = useState<boolean>(false);
+    const [editing, setEditing] = useState<boolean>(false);
     const [message, setMessage] = useState<string[]>([]);
     const [messageType, setMessageType] = useState<'error' | 'success' | 'info'>('error');
     const [form, setForm] = useState<CategoryFormType>({
@@ -37,9 +43,11 @@ export default function CategoryForm() {
         meta_title_ar: '',
         meta_desc: '',
         meta_desc_ar: '',
+        _method: 'post',
+        sort: 0,
     });
 
-    const { error, value, errorKeys, messages } = useTagValidator(form);
+    const { error, value, errorKeys, messages } = useCategoryValidator(form);
 
     const resetForm = () => {
         dropZone.current?.reset();
@@ -53,7 +61,9 @@ export default function CategoryForm() {
             meta_title_ar: '',
             meta_desc: '',
             meta_desc_ar: '',
+            _method: 'post',
             images: [],
+            sort: 0,
         });
 
         window?.scrollTo({
@@ -61,6 +71,33 @@ export default function CategoryForm() {
             left: 0,
             behavior: 'smooth',
         });
+    };
+
+    useEffect(() => {
+        if (category) handleEdit();
+    }, [category]);
+
+    const handleEdit = async () => {
+        setEditing(true);
+
+        let image = category.image ? await useUrlToImageConverter(category.image.name) : null;
+
+        setForm((values) => ({
+            ...values,
+            id: category.id,
+            title: category.title,
+            titleAr: category.title_ar,
+            sort: category.sort,
+            status: Boolean(category.status) ? true : false,
+            meta_title: category.seo ? category.seo.meta_title : '',
+            meta_title_ar: category.seo ? category.seo.meta_title_ar : '',
+            meta_desc: category.seo ? category.seo.meta_desc : '',
+            meta_desc_ar: category.seo ? category.seo.meta_desc_ar : '',
+            images: image ? [image] : [],
+            _method: 'put',
+        }));
+
+        if (image) dropZone.current.getPreview(image);
     };
 
     const updateImage = (index: number, file: File) => {
@@ -112,7 +149,11 @@ export default function CategoryForm() {
             setMessageType('success');
             setMessage((err) => [res.data.message]);
 
-            resetForm();
+            if (editing) {
+                router.get(route('category.index'));
+            } else {
+                resetForm();
+            }
         } catch (error) {
             setMessageType('error');
             setMessage((err) => [...err, (error as any).response.data.message]);
@@ -160,10 +201,16 @@ export default function CategoryForm() {
                                 {errorKeys.includes('titleAr') && <p className="text-xs text-red-500">{messages['titleAr']}</p>}
                             </div>
 
+                            <div className="col-span-12 mb-1">
+                                <Label htmlFor="titleAr">Sort</Label>
+                                <Input id="sort" type="number" name="sort" required value={form.sort} onChange={(e) => handleChange(e)} />
+                                {errorKeys.includes('sort') && <p className="text-xs text-red-500">{messages['sort']}</p>}
+                            </div>
+
                             <div className="col-span-12 mt-10">
                                 <div className="flex w-full justify-end">
                                     <Button className="cursor-pointer" disabled={processing}>
-                                        {processing && <LoaderCircleIcon className="size-5 animate-spin" />} SUBMIT
+                                        {processing && <LoaderCircleIcon className="size-5 animate-spin" />} {editing ? 'UPDATE' : 'SUBMIT'}
                                     </Button>
                                 </div>
                             </div>

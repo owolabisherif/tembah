@@ -22,8 +22,8 @@ class SoccerLeagueFixtureController extends Controller
 
     public function  __construct()
     {
-        $this->key =  env("GOAL_SERVE_KEY");
-        $this->endPoint = env("GOAL_SERVE_ENDPOINT");
+        $this->key =  config('api.key');
+        $this->endPoint = config('api.endpoint');
     }
 
     /**

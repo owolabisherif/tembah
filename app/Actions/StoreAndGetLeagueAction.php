@@ -18,15 +18,19 @@ class StoreAndGetLeagueAction {
             $disabled = blackListedCountries();
             $international = collect(["intl", "intL", "intl.", "international"]);
             $arabic = new Arabic();
-            $key =  env("GOAL_SERVE_KEY");
-            $endPoint = env("GOAL_SERVE_ENDPOINT");
+            $key =  config('api.key');
+            $endPoint = config('api.endpoint');
             $response = Http::get("{$endPoint}/{$key}/soccerleague/$leagueId?json=1");
     
             $collection = $response->collect();
     
             $league = @$collection["league"];
 
-            if(!$league) return null;
+            if(!$league) {
+                // Log::info(json_encode($collection));
+                // Log::info("No league: $leagueId");
+                return null;
+            };
     
             $league_id = (int) $league["@id"];
     

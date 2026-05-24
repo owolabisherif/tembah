@@ -103,7 +103,7 @@ class TransferNewsService
                     "league_ids" => $leagues,
                     "player_ids" => $players
                 ],
-                "status" => (bool) $request->status,
+                "status" => $scheduled ? false : (bool) $request->status,
                 "video_url" => $request->type === NewsType::Video->value ? url("/") . "/storage" . "/$videoUrl" : null,
                 "scheduled_for" => $scheduled,
                 "user_id" => Auth::id()

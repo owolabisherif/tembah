@@ -3,23 +3,27 @@ import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import CategoryForm from './components/category-form';
 
-export default function Index() {
+export type CategoryPropType = {
+    category?: any;
+};
+
+export default function Index({ category }: CategoryPropType) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Category',
-            href: '#',
+            href: route('category.index'),
         },
         {
-            title: 'Create',
+            title: category ? `Update ${category.title}` : 'Create',
             href: route('category.create'),
         },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Crate category" />
+            <Head title="Create category" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <CategoryForm />
+                <CategoryForm category={category} />
             </div>
         </AppLayout>
     );

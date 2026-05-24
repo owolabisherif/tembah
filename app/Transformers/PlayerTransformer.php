@@ -106,12 +106,13 @@ class PlayerTransformer extends TransformerAbstract
     }
 
     private function getTrophies($trophies) {
-        if(!$trophies) return [];
+        if(!$trophies || $trophies == 'null') return [];
 
         if(@$trophies->{"@league"}) {
             return [
                 "count" => (int) @$trophies->{"@count"},
                 "league" => @$trophies->{"@league"},
+                "leagueAr" => getArabic(@$trophies->{"@league"}),
                 "seasons" => explode(",", @$trophies->{"@seasons"}),
             ];
         }
@@ -120,6 +121,7 @@ class PlayerTransformer extends TransformerAbstract
             $data[] = [
                 "count" => (int) $trophy->{"@count"},
                 "league" => $trophy->{"@league"},
+                "leagueAr" => getArabic(@$trophy->{"@league"}),
                 "seasons" => explode(",", $trophy->{"@seasons"}),
             ];
         }
@@ -178,11 +180,13 @@ class PlayerTransformer extends TransformerAbstract
                 "from" => [
                     "id" => @$transfer->{"@from_id"},
                     "name" => @$transfer->{"@from"},
+                    "nameAr" => getArabic(@$transfer->{"@from"}),
                     "image" => @$fromTeamImage->image,
                 ],
                 "to" => [
                     "id" => @$transfer->{"@to_id"},
                     "name" => @$transfer->{"@to"},
+                    "nameAr" => getArabic(@$transfer->{"@to"}),
                     "image" => @$toTeamImage->image,
                 ],
             ];
@@ -235,6 +239,7 @@ class PlayerTransformer extends TransformerAbstract
             return [
                 "leagueId" => (int) @$stat->{"@league_id"},
                 "league" =>  @$stat->{"@league"},
+                "leagueAr" => getArabic(@$stat->{"@league"}),
                 "season" =>  @$stat->{"@season"},
                 "goals" => (int) @$stat->{"@goals"},
                 "assist" => (int) @$stat->{"@assists"},

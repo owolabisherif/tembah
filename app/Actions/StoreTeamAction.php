@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Log;
 
 class StoreTeamAction {
     public static function handle($teamId) {
-        $key =  env("GOAL_SERVE_KEY");
-        $endPoint = env("GOAL_SERVE_ENDPOINT");
+        $key =  config('api.key');
+        $endPoint = config('api.endpoint');
 
         $req = Http::get("{$endPoint}/{$key}/soccerstats/team/$teamId?json=1");
 
@@ -25,20 +25,16 @@ class StoreTeamAction {
             return [];
         }
 
-        $arabic = new Arabic();
         $country = Country::where(["name" => Str::lower($newTeam["country"])])->first();
 
-        if (!$country) {
-            Log::info("No country found for team: $teamId");
-            return [];
-        };
+        $countryId = $country ? $country->id : $teamId;
 
-        $venueImage = @$newTeam["venue_image"] ? base64ToImage($newTeam["venue_image"], public_path("assets/images/venues/{$newTeam['@id']}.jpeg")) : null;
-        $teamImage = @$newTeam["image"] ? base64ToImage($newTeam["image"], public_path("assets/images/teams/{$newTeam['@id']}.jpeg")) : null;
+        $venueImage = @$newTeam["venue_image"] ? base64ToImage($newTeam["venue_image"], storage_path("app/public/uploads/images/venues/{$newTeam['@id']}.png")) : null;
+        $teamImage = @$newTeam["image"] ? base64ToImage($newTeam["image"], storage_path("app/public/uploads/images/teams/{$newTeam['@id']}.png")) : null;
 
         $data = [
             "team_id" => $teamId,
-            "country_id" => $country->id,
+            "country_id" => $countryId,
             "is_women" => (bool) @$newTeam["@is_women"] == "" ? false : (@$newTeam["@is_women"] == "False" ? false : true),
             "is_national_team" => (bool) $newTeam["@is_national_team"] == "" ? false : (@$newTeam["@is_national_team"] == "False" ? false : true),
             "slug" => makeSlug(new Team(), @$newTeam["name"]),
@@ -58,8 +54,8 @@ class StoreTeamAction {
             "venue_city" => json_encode(@$newTeam["venue_city"]),
             "venue_capacity" => @$newTeam["venue_capacity"],
             "venue_capacity_ar" => getArabic(@$newTeam["venue_capacity"]),
-            "venue_image" => $venueImage ? url("assets/images/venues/{$newTeam['@id']}.jpeg") : null,
-            "image" => $teamImage ? url("assets/images/teams/{$newTeam['@id']}.jpeg") : null,
+            "venue_image" => $venueImage ? "{$newTeam['@id']}.png" : null,
+            "image" => $teamImage ? "{$newTeam['@id']}.png" : null,
             "squad" => json_encode(@$newTeam["squad"]),
             "coach" => json_encode(@$newTeam["coach"]),
             "transfers" => json_encode(@$newTeam["transfers"]),

@@ -56,7 +56,7 @@ class RefreshTodayGameCommand extends Command
 
                 $key = "soccer-today-$now";
     
-                Cacher::refresh($key, Carbon::now()->addSeconds(60), function() use($games) {
+                Cacher::refresh($key, Carbon::now()->addSeconds(30), function() use($games) {
                     return $games;
                 });
     

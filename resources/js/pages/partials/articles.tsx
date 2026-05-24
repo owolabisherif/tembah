@@ -1,92 +1,63 @@
-import ArticleCard from '@/components/article-card';
+import MatchCardLoader from '@/components/match-card-loader';
 import SlickSlider from '@/components/slick-slider';
-import Article from '@/types/article';
-import { ChevronRight } from 'lucide-react';
+import ViewAllButton from '@/components/ui/view-all-button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { News } from '@/types/news';
+import axios from 'axios';
+import { t } from 'i18next';
+import { useEffect, useState } from 'react';
+import RecentStoriesTab from './recent-stories-tab';
 
 export default function Articles() {
-    var matches: Article[] = [
-        {
-            title: 'Hello article',
-            author: {
-                name: 'First Author',
-                imageUrl: '/assets/others/image1.jpg',
-            },
-            body: 'Article body',
-            imageUrl: '/assets/others/image1.jpg',
-            tags: '#o #n #e',
-            date: '7-05-2025',
-            time: '20 hr',
-            type: 'image',
-        },
-        {
-            title: 'Hello article',
-            author: {
-                name: 'First Author',
-                imageUrl: '/assets/others/image1.jpg',
-            },
-            body: 'Article body',
-            imageUrl: '/assets/others/image1.jpg',
-            tags: '#o #n #e',
-            date: '7-05-2025',
-            time: '20 hr',
-            type: 'image',
-        },
-        {
-            title: 'Hello article',
-            author: {
-                name: 'First Author',
-                imageUrl: '/assets/others/image1.jpg',
-            },
-            body: 'Article body',
-            imageUrl: '/assets/others/image1.jpg',
-            tags: '#o #n #e',
-            date: '7-05-2025',
-            time: '20 hr',
-            type: 'image',
-        },
-        {
-            title: 'Hello article',
-            author: {
-                name: 'First Author',
-                imageUrl: '/assets/others/image1.jpg',
-            },
-            body: 'Article body',
-            imageUrl: '/assets/others/image1.jpg',
-            tags: '#o #n #e',
-            date: '7-05-2025',
-            time: '20 hr',
-            type: 'image',
-        },
-        {
-            title: 'Hello article',
-            author: {
-                name: 'First Author',
-                imageUrl: '/assets/others/image1.jpg',
-            },
-            body: 'Article body',
-            imageUrl: '/assets/others/image1.jpg',
-            tags: '#o #n #e',
-            date: '7-05-2025',
-            time: '20 hr',
-            type: 'image',
-        },
-    ];
+    const [articles, setArticles] = useState<News[]>([]);
+    const [loading, setLoading] = useState(false);
+    const isMobile = useIsMobile();
+
+    useEffect(() => {
+        getTrendingNews();
+    }, []);
+
+    const getTrendingNews = async () => {
+        try {
+            setArticles([]);
+            setLoading(true);
+            const res = await axios.get(route('home.articles.index'));
+
+            setArticles(res.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
-        <div className="mb-10">
-            <div className="flex items-center justify-between">
-                <h1 className="mt-5 mb-3 text-lg font-bold text-black">Articles</h1>
-                <div className="flex items-center">
-                    <p className="text-xs font-black">View all</p>
-                    <ChevronRight className="w-3" />
-                </div>
-            </div>
-            <SlickSlider showArrow={true} autoplay={false}>
-                {matches.map((item) => (
-                    <div className="px-2" key={item.title}>
-                        <ArticleCard {...item} />
+        <>
+            {!loading && articles.length ? (
+                <div className="mt-5 mb-5 md:mb-10">
+                    <div className="mb-2 flex items-center justify-between">
+                        <h1 className="text-lg font-bold text-black dark:text-white">{t('Articles')}</h1>
+                        <ViewAllButton href={route('article.news.index')} />
                     </div>
-                ))}
-            </SlickSlider>
-        </div>
+                    <SlickSlider showArrow={!isMobile && true} autoplay={false} initialSlide={0}>
+                        {articles.map((item) => (
+                            <div className="px-0 md:px-2" key={item.title}>
+                                <RecentStoriesTab news={item} layout="ver" type="articles" page={null} />
+                            </div>
+                        ))}
+                    </SlickSlider>
+                </div>
+            ) : loading ? (
+                <SlickSlider showArrow={false} autoplay={true} initialSlide={0}>
+                    {Array.from({ length: 9 }).map((item, index) => (
+                        <div className="col-span-4 mt-5 px-2" key={index}>
+                            <MatchCardLoader type="news" />
+                        </div>
+                    ))}
+                </SlickSlider>
+            ) : (
+                <div></div>
+            )}
+        </>
     );
 }

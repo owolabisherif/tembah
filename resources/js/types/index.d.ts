@@ -37,6 +37,10 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    periods: {
+        value: strinsg,
+        label: string
+    }[]
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
     adsUrl: string,
@@ -85,11 +89,18 @@ export interface CreateNewsProp  {
     teams: DropdownListItem[] | null;
     leagues: DropdownListItem[] | null;
     players?: DropdownListItem[];
+    countries?: DropdownListItem[];
     news?: any
+    article?: any
 };
 
+export interface SvgType {
+    classData?: string
+}
 
-export type NewsOptionType = 'text' | 'video';
+
+
+export type NewsOptionType = 'text' | 'video' | 'transfer';
 
 export interface NewsFormType  {
     id: number | null;
@@ -105,12 +116,16 @@ export interface NewsFormType  {
     tags: any[];
     leagues: any[];
     teams: any[];
+    players: any[];
+    countries: any[];
     action: SubmitScheduleButtonData | null;
     video: any;
     meta_title: string | null;
     meta_title_ar: string | null;
     meta_desc: string | null;
     meta_desc_ar: string | null;
+    keywords: string | null;
+    keywords_ar: string | null;
     status: boolean;
     is_featured: boolean;
     in_top: boolean;
@@ -136,4 +151,72 @@ export interface PaginatedType {
     prev_page_url: string
     to: number
     total: number
+}
+
+
+export interface SelectType {
+    readonly value: string;
+    readonly label: string;
+    readonly color: string;
+    readonly isFixed?: boolean;
+    readonly isDisabled?: boolean;
+}
+
+
+export interface NewOption {
+    title?: string;
+    titleAr?: string;
+    location?: string;
+};
+
+export type CatTagType = {
+    id: number;
+    slug: string;
+    title: string;
+    title_ar: string;
+    status: string;
+    imageUrl: string;
+    sort?: number;
+    created_at: string;
+};
+
+
+export interface SEOType {
+    meta_title: string | null;
+    meta_title_ar: string | null;
+    meta_desc: string | null;
+    meta_desc_ar: string | null;
+    keywords: string | null;
+    keywords_ar: string | null;
+}
+
+export interface LeagueType extends SEOType {
+    id: number | null;
+    name: string;
+    slug: string;
+    name_ar: string;
+    league_id: string;
+    country_id: number;
+    country?: {
+        id: number;
+        name: string;
+        name_ar: string;
+    } | null;
+    status: boolean;
+    season: string;
+    is_cup: boolean;
+    is_women: boolean;
+    live_lineups: boolean;
+    live_stats: boolean;
+    live_pbp: boolean;
+    is_top: boolean;
+    logo: string | File;
+    path?: string;
+    date_start?: string;
+    date_end?: string;
+    sort: number;
+    created_at?: string;
+    by_pass?: boolean;
+    seo?: SEOType;
+    _method: string;
 }

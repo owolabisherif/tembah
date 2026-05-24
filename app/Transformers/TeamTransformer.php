@@ -2,6 +2,7 @@
 
 namespace App\Transformers;
 
+use App\Jobs\StorePlayerJob;
 use App\Models\Player;
 use App\Models\Team;
 use Illuminate\Support\Facades\Log;
@@ -39,8 +40,8 @@ class TeamTransformer extends TransformerAbstract
             "id" => $team->id,
             "teamId" => (int) $team->team_id,
             "countryId" => $team->country_id,
-            "country" => $team->country->name,
-            "countryAr" => $team->country->name_ar,
+            "country" => @$team->country->name ?? $team->name,
+            "countryAr" => @$team->country->name_ar ?? $team->name_ar,
             "isWomen" => (bool) $team->country_id,
             "isNationalTeam" => (bool) $team->is_national_team,
             "slug" => $team->slug,
@@ -75,7 +76,7 @@ class TeamTransformer extends TransformerAbstract
 
 
     private function transformCoach($coach) {
-        if(!$coach) return null;
+        if(!$coach || $coach == null || $coach == 'null') return null;
 
         $coach = (array) $coach;
 
@@ -84,6 +85,7 @@ class TeamTransformer extends TransformerAbstract
         return [
             "id" => $coach["@id"],
             "name" => $coach["@name"],
+            "nameAr" => getArabic($coach["@name"]),
             "slug" => Str::slug($coach["@name"]),
             "age" => (int) @$player->age,
             "position" => @$player->position,
@@ -91,14 +93,14 @@ class TeamTransformer extends TransformerAbstract
             "nationality" => @$player->nationality,
             "height" => @$player->height,
             "image" => @$player->image,
-            "countryFlag" => getCountryFlag(@$player->nationality),
+            "countryFlag" => getCountryFlag(@$player->nationality ?? ""),
             "transferValue" => @$player->market_value
         ];
     }
 
 
     private function transformSquad($squad) {
-        if(!$squad) return [];
+        if(!$squad || $squad == null || $squad == 'null') return [];
         
         $squad = (array) $squad->player;
 
@@ -114,17 +116,21 @@ class TeamTransformer extends TransformerAbstract
                 $pl = $storedPlayers->first(fn($item) => $item->player_id == $player->{"@id"});
             }
 
+            if(!$pl) StorePlayerJob::dispatch($player->{"@id"}, $player->{"@number"});
+
             return  [
                 "id" => $player->{"@id"},
                 "name" => $player->{"@name"},
+                "nameAr" => getArabic($player->{"@name"}),
                 "slug" => Str::slug($player->{"@name"}),
                 "age" => (int) $player->{"@age"},
                 "position" => $player->{"@position"},
                 "shirt" => (int) $player->{"@number"},
                 "nationality" => @$pl->nationality,
+                "nationalityAr" => getArabic(@$pl->nationality),
                 "height" => @$pl->height,
                 "image" => @$pl->image,
-                "countryFlag" => getCountryFlag(@$pl->nationality),
+                "countryFlag" => getCountryFlag(@$pl->nationality ?? ""),
                 "transferValue" => @$pl->market_value
             ];
         });

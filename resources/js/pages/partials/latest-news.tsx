@@ -1,117 +1,68 @@
+import MatchCardLoader from '@/components/match-card-loader';
+import ViewAllButton from '@/components/ui/view-all-button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { News } from '@/types/news';
-import { ChevronRight } from 'lucide-react';
+import axios from 'axios';
+import { t } from 'i18next';
+import { useEffect, useState } from 'react';
 import LiveMatch from './live-match';
 import RecentStoriesTab from './recent-stories-tab';
 import TransferNews from './transfer-news';
 import TrendingNews from './trending-news';
 
+type LatestNewsType = {
+    news: News[];
+};
+
 export default function LatestNews() {
-    const news: News[] = [
-        {
-            id: 1,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            club: 'Liverpool',
-            time: '20mins',
-            tags: '#MohamedSalah #Liverpool #Ballon',
-            date: '20-5-2025',
-            type: 'recent',
-        },
-        {
-            id: 2,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            club: 'Liverpool',
-            time: '20mins',
-            tags: '#MohamedSalah #Liverpool #Ballon',
-            date: '20-5-2025',
-            type: 'top',
-        },
-        {
-            id: 3,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            club: 'Liverpool',
-            time: '20mins',
-            tags: '#MohamedSalah #Liverpool #Ballon',
-            date: '20-5-2025',
-            type: 'recent',
-        },
-        {
-            id: 4,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            club: 'Liverpool',
-            time: '20mins',
-            tags: '#MohamedSalah #Liverpool #Ballon',
-            date: '20-5-2025',
-            type: 'recent',
-        },
-        {
-            id: 5,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            club: 'Liverpool',
-            time: '20mins',
-            tags: '#MohamedSalah #Liverpool #Ballon #Ballon',
-            date: '20-5-2025',
-            type: 'top',
-        },
-        {
-            id: 6,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            club: 'Liverpool',
-            time: '20mins',
-            tags: '#MohamedSalah #Liverpool #Ballon #Ballon',
-            date: '20-5-2025',
-            type: 'top',
-        },
-        {
-            id: 7,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            club: 'Liverpool',
-            time: '20mins',
-            tags: '#MohamedSalah #Liverpool #Ballon #Ballon',
-            date: '20-5-2025',
-            type: 'top',
-        },
-        {
-            id: 8,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            club: 'Liverpool',
-            time: '20mins',
-            tags: '#MohamedSalah #Liverpool #Ballon #Ballon',
-            date: '20-5-2025',
-            type: 'top',
-        },
-    ];
+    const [news, setNews] = useState<News[]>([]);
+    const [loading, setLoading] = useState(false);
+    const isMobile = useIsMobile();
+    useEffect(() => {
+        getNews();
+    }, [isMobile]);
+
+    const getNews = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get(route('home.latest-news', { limit: isMobile ? 3 : 9 }));
+            setNews(res.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <>
-            <div className="mt-5 mb-3 grid grid-cols-12 gap-x-2">
-                <div className="col-span-9">
-                    <div className="flex items-baseline justify-between">
-                        <h1 className="text-lg font-bold text-black">News</h1>
-                        <div className="flex items-center">
-                            <p className="text-xs font-black">View all</p>
-                            <ChevronRight className="w-3" />
+            <div className="mt-5 grid grid-cols-12 gap-x-2">
+                <div className="col-span-12 h-full flex-1 overflow-hidden rounded-sm md:col-span-9">
+                    <div className="col-span-9">
+                        <div className="mb-5 flex items-baseline justify-between">
+                            <h1 className="text-lg font-bold text-black dark:text-white">{t('News')}</h1>
+                            <ViewAllButton href={route('text.news.index')} />
                         </div>
                     </div>
-                </div>
-                <div className="col-span-3"></div>
-            </div>
-
-            <div className="grid grid-cols-12 gap-x-2">
-                <div className="col-span-9 h-full flex-1 overflow-hidden rounded-sm">
                     <div className="grid grid-cols-12 gap-5">
-                        {news.map((item) => (
-                            <a className="col-span-4 block cursor-pointer rounded-sm hover:bg-gray-200" key={item.id}>
-                                <RecentStoriesTab news={item} layout="ver" />
-                            </a>
-                        ))}
+                        {!loading && news.length ? (
+                            <>
+                                {news?.map((item) => (
+                                    <div className="col-span-12 block cursor-pointer rounded-sm md:col-span-4" key={item.id}>
+                                        <RecentStoriesTab news={item} layout="ver" page={null} />
+                                    </div>
+                                ))}
+                            </>
+                        ) : loading ? (
+                            Array.from({ length: isMobile ? 3 : 9 }).map((item, index) => (
+                                <div className={isMobile ? 'col-span-12' : 'col-span-4'} key={index}>
+                                    <MatchCardLoader type="news" />
+                                </div>
+                            ))
+                        ) : (
+                            <div></div>
+                        )}
+
                         <div className="col-span-12">
                             <TransferNews />
                         </div>
@@ -121,7 +72,7 @@ export default function LatestNews() {
                     </div>
                 </div>
 
-                <div className="col-span-3 overflow-hidden">
+                <div className="col-span-3 hidden overflow-hidden md:block">
                     <LiveMatch />
                 </div>
             </div>

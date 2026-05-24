@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string("title");
             $table->string("title_ar");
             $table->string('type')->default("text"); //video
-            $table->string("url");
+            $table->string("name");
             $table->boolean("status")->default(true);
             $table->timestamps();
         });

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 use App\Transformers\LeagueStatTransformer;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class SoccerLeagueStatController extends Controller
@@ -22,8 +23,8 @@ class SoccerLeagueStatController extends Controller
 
     public function  __construct()
     {
-        $this->key =  env("GOAL_SERVE_KEY");
-        $this->endPoint = env("GOAL_SERVE_ENDPOINT");
+        $this->key =  config('api.key');
+        $this->endPoint = config('api.endpoint');
     }
 
     /**
@@ -41,7 +42,7 @@ class SoccerLeagueStatController extends Controller
             if ($history) {
                 return $ints->getStats($history->data)->result();
             }
-
+            
             if(isCurrentSeason($season)) {
                 return Cache::remember("stat-history-$league-$season", now()->addMinutes(RefreshTime::Fixtures->value), function() use($league, $season, $ints) {
                     $response = $this->fetchHistory($this->endPoint,$this->key,$league, $season);
@@ -57,9 +58,11 @@ class SoccerLeagueStatController extends Controller
             return $ints->getStats($response->toArray())->result();
 
         } catch(RequestException $e) {
+            Log::error($e);
             return [];
             // return response()->json(["message" => $e->getMessage(), "status" => false], $e->response->status());
-        } catch (\Exception $e) {   
+        } catch (\Exception $e) {
+            Log::error($e);  
             return [];
             // return response()->json(["error" => $e->getMessage(), "status" => false], 500);
         }

@@ -3,6 +3,7 @@ import SwiperCarousel from './swiper-carousel';
 import { Link } from '@inertiajs/react';
 import { ClockIcon } from 'lucide-react';
 // import { useTranslation } from 'react-i18next';
+import i18next, { t } from 'i18next';
 import { SwiperSlide } from 'swiper/react';
 
 const breakpoints = {
@@ -24,124 +25,99 @@ const breakpoints = {
     },
 };
 
-type Slider = {
+export type Slider = {
     id: number;
+    slug: string;
+    slug_ar: string;
     title: string;
+    title_ar: string;
     body: string;
-    route: string;
-    imageUrl: string;
-    videoUrl?: string;
-    time: string;
-    type: 'image' | 'video';
+    body_ar: string;
+    image: {
+        name: string;
+    } | null;
+    name?: string; //imageurl
+    created_at: string;
+    type: 'text' | 'transfer' | 'video';
+    page?: string;
 };
 
-export default function MainHomeSlider() {
-    // const { t, i18n } = useTranslation();
-    // const [sliders, setSliders] = useState<SliderItem[]>([]);
-    // let { sliders, loading, addSliders } = useSliderStore((store) => store);
+type MainHomeSliderProp = {
+    sliders: Slider[];
+};
 
-    // useEffect(() => {
-    //     getSliders();
-    // }, []);
-
-    // const getSliders = async () => {
-    //     if (!sliders.length) addSliders([]);
-    // };
-
-    var sliders: Slider[] = [
-        {
-            id: 1,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            body: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            route: '/',
-            time: '30 mins',
-            type: 'image',
-        },
-        {
-            id: 2,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            body: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            route: '/',
-            time: '20 mins',
-            type: 'image',
-        },
-        {
-            id: 3,
-            title: "Mohamed Salah enters the 2025 Ballon d'Or race Mohamed Salah enters the 2025 Ballon d'Or race",
-            imageUrl: '/assets/others/image1.jpg',
-            body: "Mohamed Salah enters the 2025 Ballon d'Or race",
-            route: '/',
-            time: '20 mins',
-            type: 'video',
-            videoUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        },
-    ];
-
+export default function MainHomeSlider({ sliders }: MainHomeSliderProp) {
     return (
         <>
-            {sliders.length && (
-                <SwiperCarousel spaceBetween={30} slidesPerView={1} loop={true} className="">
+            {Boolean(sliders.length) ? (
+                <SwiperCarousel spaceBetween={30} slidesPerView={1} loop={sliders.length > 1}>
                     {sliders.map((slider) =>
-                        slider.type == 'image' ? (
+                        slider.type == 'text' || slider.type == 'transfer' ? (
                             <SwiperSlide
-                                style={{ backgroundImage: `url(${slider.imageUrl})` }}
+                                style={{ backgroundImage: `url(${slider.name ?? slider.image?.name})` }}
                                 className="h-full bg-cover bg-center"
                                 dir="ltr"
                                 key={slider.id}
                             >
-                                <div className="flex h-full w-full flex-col items-start justify-end bg-[#00315F]/45 px-20 pb-5 text-white">
-                                    {slider.route && (
-                                        <div className="mb-5 flex items-center justify-center gap-5">
-                                            <Link
-                                                href={slider.route}
-                                                className="rounded-full bg-red-600 px-5 py-2 font-bold text-white hover:bg-[#005FAD]"
-                                            >
-                                                Learn more
-                                            </Link>
-                                            <div className="flex items-center justify-center gap-1">
-                                                <ClockIcon className="w-4" />
-                                                <p className="text-xs">{slider.time}</p>
-                                            </div>
+                                <div
+                                    className="flex h-full w-full flex-col items-start justify-end bg-[#00315F]/45 px-20 pb-5 text-white"
+                                    dir={i18next.dir()}
+                                >
+                                    <div className="mb-5 flex items-center justify-center gap-5">
+                                        <Link
+                                            href={route('show.news', { slug: slider.slug, type: slider.page ?? 'slider' })}
+                                            className="rounded-full bg-red-600 px-5 py-2 font-bold text-white hover:bg-[#005FAD]"
+                                        >
+                                            {t('Learn more')}
+                                        </Link>
+                                        <div className="flex items-center justify-center gap-1">
+                                            <ClockIcon className="w-4" />
+                                            <p className="text-xs">{slider.created_at}</p>
                                         </div>
-                                    )}
-                                    <h1 className="mt-10 mb-5 text-xl font-bold md:mt-0 md:text-2xl">{slider.title}</h1>
+                                    </div>
+                                    <h1 className="mt-10 mb-5 hidden text-xl font-bold md:mt-0 md:block md:text-2xl">
+                                        {i18next.language == 'en' ? slider.title : slider.title_ar}
+                                    </h1>
                                 </div>
                             </SwiperSlide>
                         ) : (
                             <SwiperSlide
-                                style={{ backgroundImage: `url(${slider.imageUrl})` }}
+                                style={{ backgroundImage: `url(${slider.name ?? slider.image?.name})` }}
                                 className="h-full bg-cover bg-center"
                                 dir="ltr"
                                 key={slider.id}
                             >
-                                <div className="flex h-full w-full flex-col items-start justify-end bg-[#00315F]/45 px-20 pb-5 text-white">
+                                <div
+                                    className="flex h-full w-full flex-col items-start justify-end bg-[#00315F]/45 px-20 pb-5 text-white"
+                                    dir={i18next.dir()}
+                                >
                                     <div className="flex w-full items-center justify-center">
-                                        <div className="h-24 w-24">
+                                        <div className="size-10 md:size-24">
                                             <img src="/assets/icons/playbtn.png" alt="" className="h-full w-full object-contain" />
                                         </div>
                                     </div>
-                                    {slider.route && (
-                                        <div className="mb-5 flex items-center justify-center gap-5">
-                                            <Link
-                                                href={slider.route}
-                                                className="rounded-full bg-red-600 px-5 py-2 font-bold text-white hover:bg-[#005FAD]"
-                                            >
-                                                Learn more
-                                            </Link>
-                                            <div className="flex items-center justify-center gap-1">
-                                                <ClockIcon className="w-4" />
-                                                <p className="text-xs">{slider.time}</p>
-                                            </div>
+                                    <div className="mb-5 flex items-center justify-center gap-5">
+                                        <Link
+                                            href={route('show.news', { slug: slider.slug, type: slider.page ?? 'slider' })}
+                                            className="rounded-full bg-red-600 px-5 py-2 font-bold text-white hover:bg-[#005FAD]"
+                                        >
+                                            {t('Learn more')}
+                                        </Link>
+                                        <div className="flex items-center justify-center gap-1">
+                                            <ClockIcon className="w-4" />
+                                            <p className="text-xs">{slider.created_at}</p>
                                         </div>
-                                    )}
-                                    <h1 className="mt-10 mb-5 text-xl font-bold md:mt-0 md:text-2xl">{slider.title}</h1>
+                                    </div>
+                                    <h1 className="mt-10 mb-5 hidden text-xl font-bold md:mt-0 md:block md:text-2xl">
+                                        {i18next.language == 'en' ? slider.title : slider.title_ar}
+                                    </h1>
                                 </div>
                             </SwiperSlide>
                         ),
                     )}
                 </SwiperCarousel>
+            ) : (
+                <div className="h-48 w-full animate-pulse rounded-sm bg-gray-200 md:h-100"></div>
             )}
         </>
     );

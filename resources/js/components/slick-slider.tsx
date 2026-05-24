@@ -18,6 +18,7 @@ function PrevArrow(props: any) {
 
 type SlickSliderType = {
     showArrow: boolean;
+    infinite?: boolean;
     autoplay: boolean;
     initialSlide: number;
     slidesToShow?: number;
@@ -32,7 +33,7 @@ export default function SlickSlider(props: PropsWithChildren<SlickSliderType>) {
 
     var settings = {
         dots: false,
-        infinite: true,
+        infinite: props.infinite ?? true,
         slidesToShow: props.slidesToShow ?? 4,
         slidesToScroll: 1,
         autoplay: props.autoplay,

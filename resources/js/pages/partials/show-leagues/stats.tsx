@@ -4,6 +4,7 @@ import useLeagueStore from '@/stores/use-league-store';
 import { SharedData } from '@/types';
 import { League, StatResponse } from '@/types/match';
 import { usePage } from '@inertiajs/react';
+import { t } from 'i18next';
 import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import Ad from '../ad';
 
@@ -31,27 +32,31 @@ export default function Stats({ ...props }: PropsWithChildren<League>) {
 
     return (
         <>
-            <h1 className="mb-5 text-xl font-bold">Top stats</h1>
+            <h1 className="mb-5 text-xl font-bold">{t('Top stats')}</h1>
             <Ad />
             {!loading && leagues[leagueId]?.stats && Object.entries(leagues[leagueId]?.stats).length && hasStats ? (
                 <div className="grid grid-cols-12 gap-x-5">
-                    <div className="col-span-4">
+                    <div className="col-span-12 md:col-span-4">
                         {leagues[leagueId].stats.goals.length ? (
-                            <StatCard title="Top scorer" payload={leagues[leagueId].stats.goals.slice(0, 3)} />
+                            <StatCard title={t('Top scorer')} payload={leagues[leagueId].stats.goals.slice(0, 3)} leagueId={leagueId} />
                         ) : (
                             ''
                         )}
                     </div>
-                    <div className="col-span-4">
+                    <div className="col-span-12 md:col-span-4">
                         {leagues[leagueId].stats.assists.length ? (
-                            <StatCard title="Assists" payload={leagues[leagueId].stats.assists.slice(0, 3)} />
+                            <StatCard title={t('Assists')} payload={leagues[leagueId].stats.assists.slice(0, 3)} leagueId={leagueId} />
                         ) : (
                             ''
                         )}
                     </div>
-                    <div className="col-span-4">
+                    <div className="col-span-12 md:col-span-4">
                         {leagues[leagueId].stats.goalsPlusAssists.length ? (
-                            <StatCard title="Goals + Assists" payload={leagues[leagueId].stats.goalsPlusAssists.slice(0, 3)} />
+                            <StatCard
+                                title={t('Goals + Assists')}
+                                payload={leagues[leagueId].stats.goalsPlusAssists.slice(0, 3)}
+                                leagueId={leagueId}
+                            />
                         ) : (
                             ''
                         )}
@@ -61,7 +66,7 @@ export default function Stats({ ...props }: PropsWithChildren<League>) {
                 <Loader />
             ) : (
                 <div className="flex w-full items-center justify-center p-3">
-                    <p className="text-lg font-bold">No stats to show.</p>
+                    <p className="text-lg font-bold">{t('No stats to show.')}</p>
                 </div>
             )}
         </>

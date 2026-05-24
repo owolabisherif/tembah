@@ -1,7 +1,14 @@
 import { usePlaceholderImage } from '@/hooks/user-placeholder-image';
+import { MoreVerticalIcon } from 'lucide-react';
 
-export default function MatchCardLoader() {
-    return (
+type MatchCardType = 'news' | 'match';
+
+type MatchCardProp = {
+    type?: MatchCardType;
+};
+
+export default function MatchCardLoader({ type = 'match' }: MatchCardProp) {
+    return type == 'match' ? (
         <div className="relative mx-0.5 h-full w-full overflow-x-hidden rounded-sm border-2 border-gray-100 px-3 py-8 shadow-xs">
             <div className="anim absolute inset-0 bg-gray-500/30 backdrop-blur-sm"></div>
             <div className="absolute inset-0 animate-pulse bg-white/70"></div>
@@ -30,6 +37,22 @@ export default function MatchCardLoader() {
                     </div>
 
                     <h3 className="text-center text-xs font-semibold text-black">Team B</h3>
+                </div>
+            </div>
+        </div>
+    ) : (
+        <div className="flex w-full animate-pulse flex-col gap-x-3">
+            <div className="mb-1 h-32 w-full overflow-hidden rounded-sm bg-gray-200"></div>
+            <div className="flex h-24 flex-1 flex-col overflow-hidden">
+                <div className="mb-3 h-2 w-full rounded-full bg-gray-100"></div>
+                <div className="mb-2 flex justify-between">
+                    <div className="flex h-fit w-full flex-1 items-center gap-x-1">
+                        <div className="h-8 w-8 rounded-full bg-gray-100"></div>
+                        <p className="text-xs text-gray-100">Tembah • 1 hour ago</p>
+                    </div>
+                    <div className="h-2 rounded-full">
+                        <MoreVerticalIcon className="w-4 text-gray-100" />
+                    </div>
                 </div>
             </div>
         </div>

@@ -26,7 +26,7 @@ export default function Table({ team, league, ...props }: PropsWithChildren<Show
             {!loading && team && leagues[league ?? team.leagues?.league_id[0] ?? 0]?.standings?.length ? (
                 <LeagueTable
                     table={leagues[league ?? team.leagues?.league_id[0] ?? 0].standings!}
-                    showFilter={false}
+                    showFilter={true}
                     teamsInView={[team.teamId.toString()]}
                     className="mt-5"
                     league={league ?? null}
