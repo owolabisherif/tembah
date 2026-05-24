@@ -10,6 +10,7 @@ use App\Transformers\LeaguesTransformer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use stdClass;
 
 class HomeController extends Controller
 {
@@ -20,7 +21,7 @@ class HomeController extends Controller
         // Log::info($page);
 
         return Inertia::render('welcome', [
-            "seo" => $page->seo,
+            "seo" => @$page->seo, 
             "news" => Inertia::defer(fn() => GetHomePageNewsAction::handle(newsType:NewsType::Text, count:9, randomize:true)),
             "transferNews" => Inertia::defer(fn() => GetHomePageNewsAction::handle(newsType:NewsType::Transfer, count:4, randomize:true)),
             "topNews" => Inertia::defer(fn() => GetHomePageNewsAction::handle(newsType: NewsType::Text, isTop: true)),

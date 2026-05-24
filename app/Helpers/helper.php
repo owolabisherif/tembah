@@ -62,8 +62,8 @@ if (!function_exists("getUserLocation")) {
         
         $apiKey = config('api.geo');
 
-        $res = Cache::rememberForever("geolocation.$userIP", function() use($apiKey) {
-            $url = App::environment("local") ? "https://api.ipgeolocation.io/v2/timezone?apiKey=$apiKey&ip=37.211.170.31" : "https://api.ipgeolocation.io/v2/timezone?apiKey=$apiKey";
+        $res = Cache::rememberForever("geolocation.$userIP", function() use($apiKey, $userIP) {
+            $url = App::environment("local") ? "https://api.ipgeolocation.io/v2/timezone?apiKey=$apiKey&ip=37.211.170.31" : "https://api.ipgeolocation.io/v2/timezone?apiKey=$apiKey&ip=$userIP";
 
             $curl = curl_init();
             curl_setopt_array($curl, array(
