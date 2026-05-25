@@ -39,7 +39,7 @@ class Player extends Model implements Sitemapable
     protected function teamFlag(): Attribute
     {
         return Attribute::make(
-            get: fn(string | null $team_flag ) => $team_flag  ? url("/") . "/assets/images/teams/$team_flag" : null,
+            get: fn(string | null $team_flag ) => $team_flag  ? url("/") . "/storage/uploads/images/teams/$team_flag" : null,
         );
     }
 

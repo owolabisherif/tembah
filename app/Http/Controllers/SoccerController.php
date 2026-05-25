@@ -43,7 +43,6 @@ class SoccerController extends Controller
     public function games($period = "home")
     {
         ini_set('max_execution_time', 0);
-        Log::info( $period);
         $now = Carbon::now()->format("Y-m-d");
         $yesterday = Carbon::now()->subDay()->format("Y-m-d");
         $tomorrow = Carbon::now()->addDay()->format("Y-m-d");
@@ -82,8 +81,6 @@ class SoccerController extends Controller
             $games = Cache::remember("soccer-today-{$filter['label']}", Carbon::now()->addSeconds(60), function() use($period) {
                 return GetGamesAction::make($period)->handle();
             });
-
-            Log::info($games);
 
             if ($games instanceof stdClass) {
                 $games = [$games];

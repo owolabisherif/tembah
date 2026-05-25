@@ -48,8 +48,6 @@ class PlayerTransformer extends TransformerAbstract
         $overallStats = json_decode($player->overall_clubs);
         $trophies = json_decode($player->trophies);
 
-        Log::info(json_encode($stats));
-
         return [
             "playerId" => $player->player_id,
             "teamId" => $player->team_id,
@@ -77,8 +75,6 @@ class PlayerTransformer extends TransformerAbstract
             "birthDateAr" => $ar->date("M d, Y", Carbon::parse($player->birthdate)->timestamp),
             "position" => $player->position,
             "positionAr" => $player->position_ar,
-            "shirt" => $player->shirt,
-            "shirtAr" => $player->shirt_ar,
             "shirt" => $player->shirt,
             "shirtAr" => $player->shirt_ar,
             "preferredFoot" => $player->preferred_foot,
@@ -141,9 +137,14 @@ class PlayerTransformer extends TransformerAbstract
 
         $teamArray = [];
 
+       if(@$transfers->{"@from_id"} && @$transfers->{"@to_id"}) {
+            $transfers = [$transfers];
+       }
+
         foreach ($transfers as $transfer) {
             $teamArray = [$transfer->{"@from_id"}, $transfer->{"@to_id"}, ...$teamArray];
         }
+
             
         $teams = Team::whereIn("team_id", $teamArray)->get(["team_id","image"]);
 
