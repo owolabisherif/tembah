@@ -35,28 +35,24 @@ export default function Stats({ ...props }: PropsWithChildren<League>) {
             <h1 className="mb-5 text-xl font-bold">{t('Top stats')}</h1>
             <Ad />
             {!loading && leagues[leagueId]?.stats && Object.entries(leagues[leagueId]?.stats).length && hasStats ? (
-                <div className="grid grid-cols-12 gap-x-5">
+                <div className="mt-5 grid grid-cols-12 gap-x-5">
                     <div className="col-span-12 md:col-span-4">
                         {leagues[leagueId].stats.goals.length ? (
-                            <StatCard title={t('Top scorer')} payload={leagues[leagueId].stats.goals.slice(0, 3)} leagueId={leagueId} />
+                            <StatCard title={t('Top scorer')} payload={leagues[leagueId].stats.goals} leagueId={leagueId} />
                         ) : (
                             ''
                         )}
                     </div>
                     <div className="col-span-12 md:col-span-4">
                         {leagues[leagueId].stats.assists.length ? (
-                            <StatCard title={t('Assists')} payload={leagues[leagueId].stats.assists.slice(0, 3)} leagueId={leagueId} />
+                            <StatCard title={t('Assists')} payload={leagues[leagueId].stats.assists} leagueId={leagueId} />
                         ) : (
                             ''
                         )}
                     </div>
                     <div className="col-span-12 md:col-span-4">
                         {leagues[leagueId].stats.goalsPlusAssists.length ? (
-                            <StatCard
-                                title={t('Goals + Assists')}
-                                payload={leagues[leagueId].stats.goalsPlusAssists.slice(0, 3)}
-                                leagueId={leagueId}
-                            />
+                            <StatCard title={t('Goals + Assists')} payload={leagues[leagueId].stats.goalsPlusAssists} leagueId={leagueId} />
                         ) : (
                             ''
                         )}

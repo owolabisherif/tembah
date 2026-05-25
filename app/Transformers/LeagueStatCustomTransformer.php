@@ -7,6 +7,7 @@ use App\Models\Player;
 use League\Fractal\TransformerAbstract;
 use App\Models\Team;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use stdClass;
 use Illuminate\Support\Str;
 
@@ -168,7 +169,6 @@ class LeagueStatCustomTransformer extends TransformerAbstract
     }
 
     private function handleStat($data) {
-        $player = Player::wherePlayerId($data["@playerid"])->first(["image", "shirt"]);
 
         // if(!$player) $player = StorePlayerAction::handle($data["@playerid"], 0);
 
@@ -178,14 +178,15 @@ class LeagueStatCustomTransformer extends TransformerAbstract
         if (array_key_exists($data["@playerid"], $this->goals)) {
             $this->goals[$data["@playerid"]]["value"]++;
         } else {
-           
+            $player = Player::wherePlayerId($data["@playerid"])->first(["image", "shirt"]);
+
             $this->goals[$data["@playerid"]] = [
                 "player" => [
                     "id" => (int) $data["@playerid"],
-                    "slug" => Str::slug($data["@player"]),
-                    "slugAr" => makeArabicSlug(getArabic($data["@player"])),
-                    "name" => $data["@player"],
-                    "nameAr" => getArabic($data["@player"]),
+                    "slug" => @$player->slug ?? Str::slug($data["@player"]),
+                    "slugAr" => @$player->slug_ar ?? makeArabicSlug(getArabic($data["@player"])),
+                    "name" => @$player->name ?? $data["@player"],
+                    "nameAr" => @$player->name_ar ?? getArabic($data["@player"]),
                     "image" => @$player->image,
                     "shirt" => @$player->shirt ?? 0
                 ],
@@ -201,17 +202,21 @@ class LeagueStatCustomTransformer extends TransformerAbstract
             ];
         }
 
+
+
         if($data["@assist"] != "") {
+            $player = Player::wherePlayerId($data["@assistid"])->first(["image", "shirt"]);
+
             if (array_key_exists($data["@assistid"], $this->assists)) {
                 $this->assists[$data["@assistid"]]["value"]++;
             } else {
                 $this->assists[$data["@assistid"]] = [
                     "player" => [
                         "id" => (int) $data["@assistid"],
-                        "slug" => Str::slug($data["@assist"]),
-                        "slugAr" => makeArabicSlug(getArabic($data["@assist"])),
-                        "name" => $data["@assist"],
-                        "nameAr" => getArabic($data["@assist"]),
+                        "slug" => @$player->slug ?? Str::slug($data["@assist"]),
+                        "slugAr" => @$player->slug_ar ?? makeArabicSlug(getArabic($data["@assist"])),
+                        "name" => @$player->name ?? $data["@assist"],
+                        "nameAr" => @$player->name_ar ?? getArabic($data["@assist"]),
                         "image" => @$player->image,
                         "shirt" => @$player->shirt ?? 0
                     ],
