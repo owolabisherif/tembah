@@ -18,8 +18,6 @@ class HomeController extends Controller
     {
         $page = Page::with(["seo"])->whereSlug("home")->first();
 
-        // Log::info($page);
-
         return Inertia::render('welcome', [
             "seo" => @$page->seo, 
             "news" => Inertia::defer(fn() => GetHomePageNewsAction::handle(newsType:NewsType::Text, count:9, randomize:true)),

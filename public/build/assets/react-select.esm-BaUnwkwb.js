@@ -1,0 +1,1 @@
+import{u as o,S as s}from"./useStateManager-7e1e8489.esm-CC1iljhr.js";import{_ as S}from"./extends-CF3RwP-h.js";import{r as e}from"./app-DVZ3R36C.js";import"./index-DqG8RjL3.js";var m=e.forwardRef(function(r,t){var a=o(r);return e.createElement(s,S({ref:t},a))}),i=m;export{i as S};

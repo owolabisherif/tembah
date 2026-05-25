@@ -10,18 +10,20 @@ type VideoPlayerProp = {
 
 export default function VideoPlayerWrapper({sources}: VideoPlayerProp) {
     const [selected, setSelected] = useState(0);
+    const [reset, setReset] = useState(0);
     const [videoSource, setVideoSource] = useState<VideoSourceType[]>([]);
     const { index, player, jump, init, setWaiting, waiting } = useVideoPlayerStore((state) => state);
     const page = usePage();
     const playerRef = useRef<HTMLDivElement>(null);
 
+
     useEffect(() => {
-        console.log(player)
         if(!player) return
 
-        // player.on('ended', () => {
-        //     handleSelected(0)
-        // })
+        player.on('ended', () => {
+            let val = reset + 1
+            setReset(val)
+        })
     }, [player])
 
     var total: number = 0;
@@ -74,5 +76,5 @@ export default function VideoPlayerWrapper({sources}: VideoPlayerProp) {
 
     const handleUpdatePlaylist = (currentIndex: number) => {};
 
-    return  <VideoPlayer sources={videoSource} updatePlaylist={handleUpdatePlaylist}/>
+    return  <VideoPlayer sources={videoSource} key={reset} updatePlaylist={handleUpdatePlaylist}/>
 }
