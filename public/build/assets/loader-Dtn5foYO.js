@@ -1,0 +1,1 @@
+import{j as e,t as s}from"./app-UMTMoFRO.js";function a(){return e.jsx("div",{className:"flex h-36 max-h-48 w-full animate-pulse items-center justify-center bg-gray-50",children:e.jsx("p",{className:"font-bold",children:s("Please wait...")})})}export{a as L};

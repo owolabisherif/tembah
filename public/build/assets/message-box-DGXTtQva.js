@@ -1,6 +1,0 @@
-import{j as e}from"./app-DVZ3R36C.js";import{c}from"./utils-jAU0Cazi.js";import{c as n}from"./createLucideIcon-CX23TqWE.js";/**
- * @license lucide-react v1.14.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */const x=[["circle",{cx:"12",cy:"12",r:"10",key:"1mglay"}],["path",{d:"m15 9-6 6",key:"1uzhvr"}],["path",{d:"m9 9 6 6",key:"z0biqf"}]],t=n("circle-x",x);function f({type:o,title:r,className:i,close:s,children:a,...d}){let l={success:"green-500",error:"red-500",info:"yellow-400"};return e.jsxs("div",{className:c("flex-col w-full rounded-sm shadow-xs",`bg-${l[o]}`,i),children:[r?e.jsxs("div",{className:c("border-b p-2","border-b-gray-50/20 flex justify-between"),children:[e.jsx("p",{className:"text-sm font-bold text-white",children:r}),s?e.jsx("button",{className:"cursor-pointer",onClick:()=>s(),children:e.jsx(t,{className:"size-5 text-white"})}):""]}):"",e.jsxs("div",{className:"px-2 py-4 text-white shadow-xs flex justify-between",children:[e.jsx("div",{className:"flex-1",children:a}),s&&!r?e.jsx("button",{className:"cursor-pointer",onClick:()=>s(),children:e.jsx(t,{className:"size-5 text-white"})}):""]})]})}export{f as M};
