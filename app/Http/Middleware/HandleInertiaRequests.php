@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             "periods" => GameCalenderGeneratorAction::handle(),
-            "adsUrl" => "https://emqatar.com/adserver/www/delivery/fc.php?script=apVideo:vast2&zoneid=1&skipoffset=30",
+            "adsUrl" => "https://emqatar.com/adserver/www/delivery/fc.php?script=apVideo:vast2&zoneid=1&skipoffset=10",
             'auth' => [
                 'user' => $request->user(),
             ],

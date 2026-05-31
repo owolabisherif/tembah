@@ -105,7 +105,7 @@ export default function RecentStoriesTab({ news, layout = 'hor', type = 'all', p
                 </div>
             ) : (
                 <div className="flex h-full w-full flex-col gap-x-3 overflow-hidden rounded-sm shadow-sm">
-                    <div className="relative mb-1 h-32 w-full overflow-hidden rounded-sm">
+                    <div className="relative mb-1 h-44 w-full overflow-hidden rounded-sm">
                         {news.images && news.images.length ? (
                             <img src={news.images[0]?.name} alt={news.title} className="h-full w-full object-cover object-center md:object-fill" />
                         ) : (

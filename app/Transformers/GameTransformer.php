@@ -88,7 +88,7 @@ class GameTransformer
             }
 
 
-            ['sort' => $sort, 'data' => $leagueData] = $this->getLeagueData($game->{'@id'});
+            ['sort' => $sort, 'data' => $leagueData] = $this->getLeagueData($game->{'@id'}, $updatedMatch);
 
             $data = [...$data, [
                 "id" => $game->{'@id'},
@@ -132,7 +132,7 @@ class GameTransformer
         ];
     }
 
-    private function getLeagueData($leagueId): array {
+    private function getLeagueData(int $leagueId, $updatedMatch): array {
         $league = League::with(["country"])->whereLeagueId($leagueId)->first();
         
         if(!$league) $league = StoreAndGetLeagueAction::handle($leagueId);
@@ -140,7 +140,7 @@ class GameTransformer
         if(!$league) return ["sort" => 900000, "data" => null];
 
         return [
-            "sort" => $this->getLeagueSort($league),
+            "sort" => $this->getLeagueSort($league, $updatedMatch),
             "data" => [
                 "id" => $league->id,
                 "leagueId" => $league->league_id,
@@ -157,14 +157,21 @@ class GameTransformer
 
     }
 
-    private function getLeagueSort($league) {
+    private function getLeagueSort($league, $updatedMatch) {
         $autoSort = true;
 
         if(!$autoSort) return $league->sort;
 
+        
+
         $userCountry = getUserLocation()?->location?->country_name ?? 'Qatar';
 
-        if(strtolower($league->country->name) == strtolower($userCountry)) {
+        $isUserCountryPlaying = collect($updatedMatch)->first(function ($match) use($userCountry) {
+            return strtolower($match["homeTeam"]["name"]) == strtolower($userCountry) || strtolower($match["awayTeam"]["name"]) == strtolower($userCountry);
+        });
+
+
+        if(strtolower($league->country->name) == strtolower($userCountry) || $isUserCountryPlaying) {
             return 1;
         } else if ($league->is_top == 1) {
             return 2;

@@ -172,7 +172,7 @@ class LeagueFixtureCustomTransformer extends TransformerAbstract
 
                 array_push($matches, $payload);
 
-                if (@$payload['staticId'] != "") {
+                if (@$payload['staticId'] != "" && $payload["homeTeam"]["teamId"] && $payload["awayTeam"]["teamId"]) {
                     $this->fixturesToStore = [...$this->fixturesToStore, [
                         "league_id" => $this->leagueId,
                         "home_team_id" => $payload["homeTeam"]["teamId"],

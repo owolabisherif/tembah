@@ -63,14 +63,7 @@ export default function NewsShow({ slug, type, news }: NewsShowProp) {
                                     {/* <video className="h-full w-full" controls autoPlay>
                                         <source src={news.video_url!} />
                                     </video> */}
-                                    <VideoPlayerWrapper
-                                        sources={[
-                                            { type: '', src: news.video_url! },
-                                            { type: '', src: news.video_url! },
-                                            { type: '', src: news.video_url! },
-                                            { type: '', src: news.video_url! },
-                                        ]}
-                                    />
+                                    <VideoPlayerWrapper sources={[{ type: '', src: news.video_url! }]} />
                                 </div>
                             ) : (
                                 <div className="h-fit w-full md:h-[40rem]">
