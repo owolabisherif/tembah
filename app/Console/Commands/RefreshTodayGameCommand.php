@@ -35,35 +35,29 @@ class RefreshTodayGameCommand extends Command
     {
         try {
             $now = Carbon::now()->format("Y-m-d");
+            $t = now();
     
             $games = GetGamesAction::make('home')->handle();
+
+            if(empty($games)) {
+                Log::info("An error occured: $t");
+                return;
+            }
 
             if ($games instanceof stdClass) {
                 $games = [$games];
             }
 
-            $t = now();
+            $games = GameTransformer::make($games)->get();
 
-            $liveOutput = response()->json(GameTransformer::make($games)->get());
+            $fixtures =  HistoricalFixture::where(['date' => $now])?->first() ?? new HistoricalFixture();
+            $fixtures->date = $now ;
+            $fixtures->data = $games;
 
-            if (!empty($liveOutput)) {
-                
-                $fixtures =  HistoricalFixture::where(['date' => $now])?->first() ?? new HistoricalFixture();
-                $fixtures->date = $now ;
-                $fixtures->data = $games;
-    
-                $fixtures->save();
+            $fixtures->save();
 
-                $key = "soccer-today-$now";
-    
-                Cacher::refresh($key, Carbon::now()->addSeconds(30), function() use($games) {
-                    return $games;
-                });
-    
-                Log::info("Game refreshed {$t}");
-            } else {
-                Log::info("Game was not refreshed {$t}");
-            }
+            Log::info("Game refreshed {$t}");
+
         } catch (\Exception $e) {
             Log::info("Game refresh error");
             Log::error($e);

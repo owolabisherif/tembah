@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use ArPHP\I18N\Arabic;
 use Carbon\Carbon;
 use App\Enums\Status;
+use App\Jobs\StoreHistoricalFixturesJob;
 use App\Models\Country;
 use App\Models\Fixture;
 use App\Models\HistoricalFixture;
@@ -33,28 +34,24 @@ class SoccerController extends Controller
 {
     private $key;
     private $endPoint;
+    private string $timezone;
 
     public function  __construct()
     {
         $this->key =  config('api.key');
         $this->endPoint = config('api.endpoint');
+        $this->timezone = @getUserLocation()?->time_zone?->name ?? 'Asia/Qatar';
     }
 
     public function games($period = "home")
     {
         ini_set('max_execution_time', 0);
-        $now = Carbon::now()->format("Y-m-d");
-        $yesterday = Carbon::now()->subDay()->format("Y-m-d");
-        $tomorrow = Carbon::now()->addDay()->format("Y-m-d");
+        $now = Carbon::now()->setTimezone($this->timezone)->format("Y-m-d");
+        $yesterday = Carbon::now()->setTimezone($this->timezone)->subDay()->format("Y-m-d");
+        $tomorrow = Carbon::now()->setTimezone($this->timezone)->addDay()->format("Y-m-d");
 
         try {
             //home - today, d1 - tommorrow, d-1 - yesterday
-            $past = [];
-
-            for ($i=1; $i < 8; $i++) { 
-                $past[] = "d-$i";
-            }
-
             $mods = [
                 "home" => $now,
                 "d-1" => $yesterday,
@@ -64,52 +61,29 @@ class SoccerController extends Controller
             $periods = GameCalenderGeneratorAction::handle();
             $filter = collect($periods)->first(fn($item) => $item["value"] == $period);
 
-            if(in_array($period, $past)) {
-                $fixtures = HistoricalFixture::where(['date' => @$mods[$period] ?? $filter["label"]])->first();
+            $date = in_array($period, array_keys($mods)) ? $mods[$period] : $filter['label'];
 
-                if ($fixtures) {
-                    $games = @$fixtures->data;
-                    return response()->json(GameTransformer::make($games)->get());
-                }
-            }
-
-            // if(!$filter) return response()->json([]);
+            $fixtures = HistoricalFixture::where(['date' => $date])->first();
             
-            // $fixtures = HistoricalFixture::where(['date' => @$mods[$filter["label"]] ?? $filter["label"]])->first();
-
-            
-            $games = Cache::remember("soccer-today-{$filter['label']}", Carbon::now()->addSeconds(60), function() use($period) {
-                return GetGamesAction::make($period)->handle();
-            });
+            if ($fixtures) return $fixtures->data;
+                
+            $games = GetGamesAction::make($period)->handle();
 
             if ($games instanceof stdClass) {
                 $games = [$games];
             }
 
+            $gameList = GameTransformer::make($games)->get();
             
-            $liveOutput = response()->json(GameTransformer::make($games)->get());
-            
-            if(!empty($liveOutput)) {
-                $fixtures =  HistoricalFixture::where(['date' =>  @$mods[$period] ?? $filter["label"]])?->first() ?? new HistoricalFixture();
-                $fixtures->date = @$mods[$period] ?? $filter["label"];
-                $fixtures->data = $games;
-    
-                $fixtures->save();
-            }
-          
-            return $liveOutput;
+            if(!empty($games)) StoreHistoricalFixturesJob::dispatch($gameList, $date);
+
+            return response()->json($gameList);
             
         } catch (\Exception $e) {
             Log::error($e);
 
-            if (empty($liveOutput)) {
-                $fixtures = HistoricalFixture::where(['date' => $now ])->first();
-
-                if ($fixtures) {
-                    $games = @$fixtures->data;
-                    return response()->json(GameTransformer::make($games)->get());
-                }
-            }
+            $fixtures = HistoricalFixture::where(['date' => $now])->first();
+            if ($fixtures) return $fixtures->data;
 
             return response()->json([]);
         }

@@ -10,15 +10,22 @@ import { Fixtures } from '@/types/match';
 import { Link, usePage, usePoll } from '@inertiajs/react';
 import i18next, { t } from 'i18next';
 import { ArrowLeftCircleIcon, ChevronDownIcon, ChevronUp, ChevronUpIcon, FilterIcon, RotateCwIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import Ad from './partials/ad';
 
-export default function Match() {
+type MatchProp = {
+    period: string;
+};
+
+type SelectType = { label: string; value: string };
+
+export default function Match({ period }: MatchProp) {
     const [value, setValue] = useState<string[]>([]);
     const [tabs, setTabs] = useState<string[]>([]);
     const [searchText, updateSearchText] = useState<string>('');
-    const [period, setPeriod] = useState<String>('home');
+    const [selected, setSelected] = useState<SelectType>({ label: 'Today', value: 'home' });
+    const [mount, setMount] = useState<boolean>(false);
     const [fixtureList, setFixtureList] = useState<Fixtures[]>([]);
     const page = usePage<SharedData>().props;
     const { loading, leagues, matches, fixtures, initFixtures, getFilteredMatches, getFilteredMatchesByDate, refreshFixtures, getLiveFixtures } =
@@ -41,21 +48,6 @@ export default function Match() {
         { autoStart: false },
     );
 
-    const periods = useRef([
-        {
-            value: 'home',
-            label: t('Today'),
-        },
-        {
-            value: 'd-1',
-            label: t('Yesterday'),
-        },
-        {
-            value: 'd1',
-            label: t('Tomorrow'),
-        },
-    ]);
-
     useEffect(() => {
         if (fixtures.length) {
             let tabs: string[] = [];
@@ -70,9 +62,17 @@ export default function Match() {
     }, [fixtures]);
 
     useEffect(() => {
-        setPeriod(page.period as string);
-        if (!fixtures.length) initFixtures();
-        // start();
+        const select = page.periods.find((item) => item.value == period);
+        if (select) {
+            setSelected(select);
+
+            if (select.value != 'home') handlePeriod(select);
+            else initFixtures();
+
+            if (select.value == 'home') start();
+        }
+
+        setMount(true);
 
         return () => {
             stop();
@@ -80,8 +80,12 @@ export default function Match() {
     }, []);
 
     const handlePeriod = (period: any) => {
-        setPeriod(period.value);
-        stop();
+        history.pushState({}, '', `${route('soccer.matches', { period: period.value })}`);
+        if (period.value == 'home') {
+            start();
+        } else {
+            stop();
+        }
         getFilteredMatchesByDate(period.value);
     };
 
@@ -94,6 +98,27 @@ export default function Match() {
         return timer;
     };
 
+    const filteredFixtures = useMemo<Fixtures[]>(() => {
+        let searched = fixtures.filter((item) => {
+            return (
+                item.league.toLocaleLowerCase().includes(searchText.toLocaleLowerCase()) ||
+                item.leagueAr.toLocaleLowerCase().includes(searchText.toLocaleLowerCase()) ||
+                item.matches.find(
+                    (item) =>
+                        item.awayTeam.name?.toLocaleLowerCase().includes(searchText) ||
+                        item.awayTeam.nameAr?.toLocaleLowerCase().includes(searchText),
+                ) ||
+                item.matches.find(
+                    (item) =>
+                        item.homeTeam.name?.toLocaleLowerCase().includes(searchText) ||
+                        item.homeTeam.nameAr?.toLocaleLowerCase().includes(searchText),
+                )
+            );
+        });
+
+        return !searchText ? fixtures : searched;
+    }, [searchText, fixtures]);
+
     return (
         <GuestLayout title="All Matches">
             <div className="mb-3 w-fit">
@@ -103,20 +128,22 @@ export default function Match() {
                 </Link>
             </div>
             <div className="mb-8 flex max-h-[47rem] flex-col items-center gap-y-3 rounded-sm bg-gray-100 p-4 shadow-sm dark:bg-neutral-800">
-                <div>
-                    <Select
-                        openMenuOnClick={false}
-                        defaultValue={periods.current[0]}
-                        onChange={handlePeriod}
-                        isSearchable={false}
-                        isMulti={false}
-                        options={periods.current}
-                        classNames={{
-                            control: (state) =>
-                                '!rounded-full !focus:ring-0 !active:ring-0 !border-gray-300 !w-64 !focus:outline-none !active:outline-none !focus:border-0 !dark:bg-neutral-800',
-                        }}
-                    />
-                </div>
+                {mount && (
+                    <div>
+                        <Select
+                            openMenuOnClick={false}
+                            defaultValue={selected}
+                            onChange={handlePeriod}
+                            isSearchable={false}
+                            isMulti={false}
+                            options={page.periods}
+                            classNames={{
+                                control: (state) =>
+                                    '!rounded-full !focus:ring-0 !active:ring-0 !border-gray-300 !w-64 !focus:outline-none !active:outline-none !focus:border-0 !dark:bg-neutral-800',
+                            }}
+                        />
+                    </div>
+                )}
                 <div className="flex w-full gap-x-2">
                     <div className="flex flex-1 items-center justify-center rounded-full border border-gray-300 pl-1">
                         <FilterIcon className="w-4 text-gray-400" />
@@ -157,9 +184,9 @@ export default function Match() {
 
             <Ad />
 
-            {Boolean(fixtures.length) && !loading ? (
+            {Boolean(filteredFixtures.length) && !loading ? (
                 <Accordion type="multiple" value={value} onValueChange={setValue} className={cn('mt-5 transition-all')}>
-                    {fixtures.map((item, index) => (
+                    {filteredFixtures.map((item, index) => (
                         <AccordionItem value={`${index}`} className="mb-5 rounded-sm bg-blue-100 shadow-sm" key={item.league}>
                             <AccordionHeader
                                 className={cn(

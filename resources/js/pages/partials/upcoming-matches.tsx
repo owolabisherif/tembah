@@ -26,25 +26,6 @@ export default function UpcomingMatches() {
 
     const periodList = usePage<SharedData>().props.periods;
 
-    // const periods = useRef([
-    //     {
-    //         value: 'home',
-    //         label: t('Today'),
-    //     },
-    //     {
-    //         value: 'd-1',
-    //         label: t('Yesterday'),
-    //     },
-    //     {
-    //         value: 'd1',
-    //         label: t('Tomorrow'),
-    //     },
-    //     {
-    //         value: 'live',
-    //         label: 'Live',
-    //     },
-    // ]);
-
     useEffect(() => {
         if (periodList.length) {
             for (const item of periodList) {

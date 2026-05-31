@@ -1,1 +1,0 @@
-import{j as e,$ as t,t as l}from"./app-UMTMoFRO.js";function a({href:r}){return e.jsx(t,{className:"flex h-fit w-fit items-center justify-center rounded-full border border-blue-300 dark:border-neutral-700 px-2 py-1.5 hover:bg-gray-300",href:r,children:e.jsx("p",{className:"text-xs font-black",children:l("View all")})})}export{a as V};

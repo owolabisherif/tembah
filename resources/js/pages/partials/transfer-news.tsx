@@ -130,7 +130,7 @@ export default function TransferNews() {
                                                     <ShareButtons
                                                         news={news[0]}
                                                         url={route('show.news', { type: 'transfer', slug: news[0].slug })}
-                                                        className="flex w-full gap-x-2 rounded-md bg-white p-2 shadow-md"
+                                                        className="flex w-full flex-col gap-y-2 rounded-md bg-white p-2 shadow-md"
                                                     />
                                                     <PopoverArrow className="PopoverArrow" />
                                                 </PopoverContent>

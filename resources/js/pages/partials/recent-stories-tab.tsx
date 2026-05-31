@@ -93,7 +93,7 @@ export default function RecentStoriesTab({ news, layout = 'hor', type = 'all', p
                                                         ? route('show.news.cat-tag', { type: type, slug: news.slug, page: page })
                                                         : route('show.news', { type: type, slug: news.slug })
                                                 }
-                                                className="flex w-full gap-x-2 rounded-md bg-white p-2 shadow-md"
+                                                className="flex w-full flex-col gap-y-2 rounded-md bg-white p-2 shadow-md"
                                             />
                                             <PopoverArrow className="PopoverArrow" />
                                         </PopoverContent>
@@ -179,7 +179,7 @@ export default function RecentStoriesTab({ news, layout = 'hor', type = 'all', p
                                                         ? route('show.news.cat-tag', { type: type, slug: news.slug, page: page })
                                                         : route('show.news', { type: type, slug: news.slug })
                                                 }
-                                                className="flex w-full flex-row gap-x-2 rounded-md bg-white p-2 shadow-md"
+                                                className="flex w-full flex-col gap-y-2 rounded-md bg-white p-2 shadow-md"
                                             />
                                         </PopoverContent>
                                     </PopoverPortal>

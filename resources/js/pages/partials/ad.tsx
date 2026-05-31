@@ -58,7 +58,7 @@ export default function Ad({ type = 'hor' }: AdType) {
     return (
         <>
             {type == 'hor' ? (
-                <div className="relative h-32 w-full overflow-hidden rounded-sm md:h-52">
+                <div className="relative z-0 h-32 w-full overflow-hidden rounded-sm md:h-52">
                     <Fade arrows={false} duration={500} transitionDuration={1000}>
                         {images.map((image) => (
                             <a className="block h-52 w-full rounded-sm" key={image.id} href={image.url}>

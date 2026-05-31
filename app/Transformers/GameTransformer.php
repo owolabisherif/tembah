@@ -102,7 +102,10 @@ class GameTransformer
             ]];
         }
 
-        $data = collect($data)->sortBy("sort", SORT_NATURAL)->toArray();
+        $data = collect($data)->sortBy(function ($item) {
+            $item = (object) $item;
+            return [$item->sort, $item->league];
+        })->toArray();
 
 
         $this->output = (array) $data;
@@ -169,16 +172,17 @@ class GameTransformer
         $isUserCountryPlaying = collect($updatedMatch)->first(function ($match) use($userCountry) {
             return strtolower($match["homeTeam"]["name"]) == strtolower($userCountry) || strtolower($match["awayTeam"]["name"]) == strtolower($userCountry);
         });
+        
+        $isTeamInUserContinentPlaying = collect($updatedMatch)->first(function ($match) use ($userCountry) {
+            return in_array(strtolower($match["homeTeam"]["name"]), getCountriesInContinent()) || in_array(strtolower($match["awayTeam"]["name"]), getCountriesInContinent());
+        });
 
-
-        if(strtolower($league->country->name) == strtolower($userCountry) || $isUserCountryPlaying) {
+        if(strtolower($league->country->name) == strtolower($userCountry) || $isUserCountryPlaying || in_array(strtolower($league->country->name), getCountriesInContinent()) || $isTeamInUserContinentPlaying) {
             return 1;
         } else if ($league->is_top == 1) {
             return 2;
-        } else if (in_array(strtolower($league->country->name), getCountriesInContinent())) {
-            return 3;
         } else {
-            return 4;
+            return 3;
         }
     }
 
@@ -317,7 +321,7 @@ class GameTransformer
 
             $date = Carbon::parse($date)->format("Y-m-d");
             
-            if($data["staticId"] != "") {
+            if($data["staticId"] != "" && $data["homeTeam"]["teamId"] && $data["awayTeam"]["teamId"]) {
                 $this->fixturesToStore = [...$this->fixturesToStore, [
                     "league_id" => $league,
                     "slug" => $homeTeamSlug."-vs-".$awayTeamSlug."-".$data["staticId"],
@@ -418,7 +422,7 @@ class GameTransformer
 
         $date = Carbon::parse($date)->format("Y-m-d");
 
-        if ($data["staticId"] != "") {
+        if ($data["staticId"] != "" && $data["homeTeam"]["teamId"] && $data["awayTeam"]["teamId"]) {
             $this->fixturesToStore = [...$this->fixturesToStore, [
                 "league_id" => $league,
                 "slug" => $homeTeamSlug . "-vs-" . $awayTeamSlug . "-" . $data["staticId"],
